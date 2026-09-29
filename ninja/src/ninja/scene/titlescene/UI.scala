@@ -27,7 +27,7 @@ object UI:
       Layers.world -> Layer
         .Content(
           Batch(Quad(Rectangle(Layout.screen), Fill.Color(Palette.ink)), titleUI) ++
-            characterUI(Assets.assets.ninjaBlue, Facing.Down, walk, Vector2(160, 104))
+            characterUI(Assets.assets.ninjaGreen, Facing.Down, walk, Vector2(160, 104))
         )
         .withCamera(Screen.centredCamera(shared.viewport)(Point.zero)),
       Layers.ui -> Layer.Content(blinkingLabelUI("Press Start", 134, Palette.gold, now))

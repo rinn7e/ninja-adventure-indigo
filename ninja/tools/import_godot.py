@@ -70,7 +70,6 @@ ASSET_FILES = {
     "content/map/tileset_interior_floor.png": "tileset_interior_floor.png",
     "content/map/tileset_animated.png": "tileset_animated.png",
     "content/map/tileset_wall_simple.png": "tileset_wall_simple.png",
-    "content/character/ninja_blue/sprite.png": "ninja_blue.png",
     "content/character/samurai_green/samurai_green.png": "samurai_green.png",
     "content/character/samurai_blue/sprite.png": "samurai_blue.png",
     "content/character/pig/pig.png": "pig.png",
@@ -125,6 +124,9 @@ ASSET_FILES_V3 = {
     "Hud/DialogBox/Arrow.png": "dialog_arrow.png",
     "Hud/DialogBox/DialogInfo.png": "dialog_info.png",
     "World/Ld/DestroyableItem/Plant/Sprite.png": "plant.png",
+    # The player: Godot 3's green-hooded ninja (the pack's NinjaGreen, as in its screenshots),
+    # rather than Godot 4's NinjaBlue.
+    "World/Actor/Player/GreenNinja/SpriteSheet.png": "ninja_green.png",
 }
 FONT_FILES = {"theme/font_normal.ttf": "font_normal.ttf"}
 

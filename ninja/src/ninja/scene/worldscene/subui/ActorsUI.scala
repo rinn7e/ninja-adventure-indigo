@@ -152,7 +152,7 @@ object ActorsUI:
       else (player.facing, row(player, now))
     val (scale, flash) = hitEffect(model.hurtAt, now)
     val spriteUI = effectSpriteUI(
-      Assets.assets.ninjaBlue,
+      Assets.assets.ninjaGreen,
       Point(facing.column * 16, frame * 16),
       spriteCentre(player.position),
       scale,

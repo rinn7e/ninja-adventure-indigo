@@ -41,7 +41,7 @@ object Village:
 
   // --- Characters -----------------------------------------------------------
 
-  /** NinjaBlue, the player: speed 100. */
+  /** The player (Godot 4: NinjaBlue; drawn as the Godot 3 version's green ninja): speed 100. */
   val playerStart: Vector2 = origin + Vector2(56, 53)
   val playerSpeed: Double  = 100
 

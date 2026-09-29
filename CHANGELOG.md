@@ -25,6 +25,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and adher
 - F3 shows the player's position; `ninja/tools/route.py` and `ninja/tools/live.js` play the game
   from a script.
 
+### Changed
+
+- The player is the Godot 3 version's green-hooded ninja (the pack's NinjaGreen) instead of the
+  Godot 4 demo's helmeted NinjaBlue, which looks like a samurai.
+
 ### Fixed
 
 - The font's space is now wide enough between words (the old width was appended, not replaced).

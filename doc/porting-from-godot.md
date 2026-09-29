@@ -37,6 +37,7 @@ The Godot 3 demo's world is imported whole and placed north of the Godot 4 villa
 | Godot 3 | Indigo port |
 | --- | --- |
 | `World/Maps/Village.tscn`, `Interior.tscn`, `World.tscn`'s dungeon: TileMaps with TileSets whose tiles can be bigger than a cell (trees are 64x48), flipped, placed by `cell_tile_origin` (top-left, centre, bottom-left) and y-sorted by it | `PlacedTile`s drawn by `TilemapUI` with one `CloneTiles` blank per texture and size; floor layers under the characters, y-sorted rows with them, z > 0 over them |
+| `Player` (`GreenNinja`, the pack's NinjaGreen, the hooded ninja of its screenshots) | the player's sprite (Godot 4's NinjaBlue, helmeted, looks like one of the samurai) |
 | its world at (0, 0) | moved by (-456, -1128), so its screens land exactly on our camera grid and its southern tree line runs along the Godot 4 village's open north edge |
 | a strip south of its tree line that leads off the map (unfinished, like the Godot 4 village's open north edge) | the tree line opened at x 704-767 (Godot 3), floor laid through: the path between the two villages |
 | cells using deleted tiles (holes) | floor holes patched with a neighbour's tile |
