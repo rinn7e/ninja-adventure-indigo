@@ -6,8 +6,11 @@ Thumbs.db
 # the asset pack zip is ~90 MB, close to GitHub's 100 MB file limit)
 *.zip
 
-# Godot 4 (reference project in assets/NinjaAdventure Godot V4/):
-# editor cache and temp files are regenerated on import. Keep the *.import files.
+# The Godot reference project (https://github.com/pixel-boy/NinjaAdventure) has no licence, so it
+# isn't redistributed here: download it into this folder to run ninja/tools/import_godot.py.
+/assets/NinjaAdventure Godot V4/
+
+# Godot 4 editor cache and temp files.
 .godot/
 *.tmp
 *.translation
