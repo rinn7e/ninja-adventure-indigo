@@ -15,6 +15,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and adher
   hearts; monsters and props resetting when the camera reaches a new screen; hit and break
   sounds; the controls tutorial.
 - `doc/development.md`: build gotchas and how to check a change.
+- **The Godot 3 demo's world, north of the Godot 4 village**: its map (village, lake, snow,
+  rainy forest, house interior, dungeon) imported from its Godot 3 tile maps and joined to the
+  Godot 4 village through a gap in the forest; its doors, music (four tracks), weather as
+  environment zones (snow and sparks), its six monsters, breakable plants and smoke.
+- **Villagers and dialogue**: the Godot 3 villagers with their idle routines, a speech bubble in
+  talking range, and a dialogue box with portraits; Space talks next to a villager.
+- Walls along every map edge that opened onto nothing.
+- F3 shows the player's position; `ninja/tools/route.py` and `ninja/tools/live.js` play the game
+  from a script.
+
+### Fixed
+
+- The font's space is now wide enough between words (the old width was appended, not replaced).
 
 ### Changed
 

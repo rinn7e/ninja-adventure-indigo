@@ -7,15 +7,16 @@ Scala.js. It is built on
 build, same TEA-style structure, same conventions. Read the template's README first; this one only
 covers what's specific to this game.
 
-The aim is to match the original as closely as possible: the Godot 4 demo's map, characters,
-collision, camera, weather, colour grading and music, at the same 320x180 resolution, plus the
-combat from the older Godot 3 version of the demo.
+It combines both versions of the demo into one world: the Godot 4 demo's village (map,
+characters, collision, camera, weather, colour grading, music, at the same 320x180 resolution),
+and north of it, through a path in the forest, the older Godot 3 demo's whole world (its village,
+house, dungeon, villagers and combat), matching each original as closely as possible.
 
 ## Screenshots
 
-| Title | Village | Swamp | House |
-| --- | --- | --- | --- |
-| ![Title](doc/screenshot/title.png) | ![Village](doc/screenshot/village.png) | ![Swamp](doc/screenshot/swamp.png) | ![House](doc/screenshot/house.png) |
+| Village (Godot 4) | Swamp | North village (Godot 3) | Dialogue | Dungeon |
+| --- | --- | --- | --- | --- |
+| ![Village](doc/screenshot/village.png) | ![Swamp](doc/screenshot/swamp.png) | ![North village](doc/screenshot/north-village.png) | ![Dialogue](doc/screenshot/dialogue.png) | ![Dungeon](doc/screenshot/dungeon.png) |
 
 ## What's in it
 
@@ -31,13 +32,26 @@ From the **Godot 4 demo**:
   a fade, and colour grading (the swamp's gradient shader).
 - **Keyboard and gamepad** input, as in Godot's input map.
 
-From the **Godot 3 version** (which has the combat V4 lacks):
+From the **Godot 3 version** (its world lies north of the Godot 4 village):
 
-- **The lance**: hold Space to stab (3 damage).
-- **Bamboo monsters** that wander, hurt and knock you back, with life bars, in the meadow
-  north-east of the start.
-- **Death and revival**, draining hearts, monsters and props coming back when you change screen,
-  sounds, and the controls tutorial.
+- **Its whole map**, imported from its Godot 3 tile maps: the autumn village with its houses and
+  dojo, the lake, the snowy corner, the rainy forest, a house interior and the dungeon, with
+  their doors.
+- **Villagers** with their idle routines, a speech bubble in talking range, and a **dialogue
+  box** with their portraits (their lines are ours: the Godot 3 project's dialogue files aren't
+  in it).
+- **Combat**: the lance (hold Space, 3 damage), six Bamboo monsters (in the dungeon and the rainy
+  forest) that wander, hurt and knock you back; death and revival, draining hearts, monsters and
+  props coming back when you change screen; hit and break sounds; the controls tutorial.
+- **Its music** (one track per area), **breakable plants** and **smoke** plumes.
+
+Combined:
+
+- Both worlds use the Godot 4 systems: environment zones (music, weather, grading) cover the
+  Godot 3 areas too, which brings the Godot 4 demo's unused **snow** to life, plus Godot 3's
+  **sparks**.
+- The Godot 4 village's open north edge now leads, through a gap in the forest, to the Godot 3
+  village; every other edge that opened onto nothing is walled.
 
 Added for this port:
 
@@ -50,8 +64,10 @@ Added for this port:
 | Input | Action |
 | --- | --- |
 | Arrows / WASD, D-pad, left stick | Walk |
-| Space, Cross (A) | Attack (hold to keep stabbing); start the game from the title |
-| Enter / Z, Options (Start) | Start the game from the title |
+| Space, Cross (A) | Talk to a villager next to you, or attack (hold to keep stabbing); start |
+| Enter / Z | Talk, next line; start the game from the title |
+| Options (Start) | Start the game from the title |
+| F3 | Show the player's position (for development) |
 
 ## Running it
 
@@ -105,9 +121,11 @@ hold the numbers taken from Godot).
 - Nine images in `ninja/assets/` come from that demo rather than the pack: `crate`, `pot`, `grass`,
   `pig`, `shadow`, `fx_cloud`, `fx_fog`, `fx_rain` and `tileset_animated`. They are the same
   author's versions of the pack's art, made for the demo; the demo repository states no licence.
-- Combat: the Godot 3 version of the demo, MIT licence, © 2020 Emilio Coppola. Its combat logic is
-  ported here, and its assets (`monster_bamboo`, `weapon_lance`, `fx_impact`, `life_bar_mini_*`,
-  `tutorial`, `snd_hit`, `snd_grass`) are copied into `ninja/assets/`.
+- The Godot 3 version of the demo, MIT licence, © 2020 Emilio Coppola: its map, villagers,
+  combat and effects are ported here, and the files it adds to the pack's art (`v3_tileset_*`,
+  `monster_bamboo`, `weapon_lance`, `fx_impact`, `fx_spark`, `fx_smoke`, `life_bar_mini_*`,
+  `tutorial`, `dialog_*`, `npc_*`, `face_*`, `plant`, `snd_hit`, `snd_grass`) are copied into
+  `ninja/assets/`.
 
 ## Changelog
 

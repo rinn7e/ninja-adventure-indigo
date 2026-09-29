@@ -28,6 +28,28 @@ Not ported, because the demo doesn't use them: `Snow` (no zone enables it), the 
 (its `use_weapon()` only prints) and character hitboxes (nothing is connected to them). Combat
 comes from the Godot 3 version instead (below).
 
+## The Godot 3 world, joined north
+
+The Godot 3 demo's world is imported whole and placed north of the Godot 4 village
+(`ninja/tools/godot3.py` reads Godot 3 scenes; `import_godot.py` writes
+`common/constant/NorthVillageTiles.scala`; the rest is `common/constant/NorthVillage.scala`).
+
+| Godot 3 | Indigo port |
+| --- | --- |
+| `World/Maps/Village.tscn`, `Interior.tscn`, `World.tscn`'s dungeon: TileMaps with TileSets whose tiles can be bigger than a cell (trees are 64x48), flipped, placed by `cell_tile_origin` (top-left, centre, bottom-left) and y-sorted by it | `PlacedTile`s drawn by `TilemapUI` with one `CloneTiles` blank per texture and size; floor layers under the characters, y-sorted rows with them, z > 0 over them |
+| its world at (0, 0) | moved by (-456, -1128), so its screens land exactly on our camera grid and its southern tree line runs along the Godot 4 village's open north edge |
+| a strip south of its tree line that leads off the map (unfinished, like the Godot 4 village's open north edge) | the tree line opened at x 704-767 (Godot 3), floor laid through: the path between the two villages |
+| cells using deleted tiles (holes) | floor holes patched with a neighbour's tile |
+| its house interior | the Godot 4 village's house interior moves two screens east, out of its way |
+| `Teleporter` (lands 10 px along the *entered* teleporter's direction) | `Teleporter(reach = 10, keepsOffset = false)` |
+| `MusicArea`s and weather emitters placed in the world | environment zones (`NorthVillage.zones`): each music area with the weather of the emitters inside it; a quiet zone for the dungeon |
+| `Npc` + `DialogArea` (dialogue disabled: the Dialogic timelines aren't in the project) | `Villager`s with their `AnimationPlayer` routines, `talkArea`, speech bubble, `DialogueUI` (the box, portraits and arrow from its `Hud/DialogBox`); the lines are ours |
+| `DestroyableItem` (plants) | `PropKind.Plant` props |
+| `Smoke` particles | `SmokeEmitter`s, drawn by `ActorsUI.smokeUI` |
+| its `WorldEnvironment` (glow, saturation 1.1) | not ported: our colour grading works per channel |
+
+Every edge of the combined floor that opens onto nothing gets a 16px wall (on the Godot 4 grid).
+
 ## Combat, from the Godot 3 version
 
 The Godot 4 demo has no attack and no enemies. The older Godot 3 version of the demo (MIT,
@@ -47,8 +69,8 @@ The Godot 4 demo has no attack and no enemies. The older Godot 3 version of the 
 | `SndDeath.wav` on a hit, `SndGrass.wav` when a prop breaks | `soundsOf` |
 | `Tuto.gd`: the move / attack banner, gone once the player has done both (checked every 0.5s, slides down over 1s) | `noteTutorial`, `hideTutorial`, `TutorialUI` |
 
-V4 has no dungeon, so V3's three monsters stand in the same triangle in the open meadow
-north-east of the start (`Village.monsterStarts`).
+The six monsters stand where Godot 3 puts them: three in its dungeon, three in its rainy forest
+(`NorthVillage.monsterStarts`).
 
 ## The TileMap encoding
 

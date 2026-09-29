@@ -32,6 +32,25 @@ python3 -m http.server 8787 --directory out/ninja/indigoBuild.dest
 
 Restart the server after each build: the build replaces the output folder.
 
+### Playing it from a script
+
+Two tools drive the real game in a browser, so a change can be checked by playing it:
+
+- `ninja/tools/route.py x0 y0 x1 y1` finds the shortest walkable route between two world points
+  from the game's own collision data (it doesn't know about villagers or monsters) and prints it
+  as key holds.
+- `ninja/tools/live.js` (needs `npm install playwright`) opens the game in a browser window and
+  takes commands over HTTP on port 9555: hold keys, drive a route, take a screenshot:
+
+```bash
+node ninja/tools/live.js &
+curl "localhost:9555/press?k=Enter"
+curl -G "localhost:9555/route" --data-urlencode "r=$(python3 ninja/tools/route.py 64 48 273 -700)"
+curl "localhost:9555/shot?name=door"    # out/live-door.png
+```
+
+Press F3 in the game to show the player's world position.
+
 Then play it in a real browser window (with a GPU, so the FPS counter means something) and check
 what the change touches:
 
@@ -42,6 +61,8 @@ what the change touches:
 - the swamp (west of the start): rain with splashes, fog, leaves, swamp music, colour grading;
 - a house door (north of the start) and the fade;
 - combat: the lance, the monsters north-east of the start, getting hurt, dying and reviving;
+- the north village: the path from the Godot 4 village, a house door (273, -706), the dungeon door
+  (624, -464), talking to a villager, the plants, the smoke;
 - the letterbox at several window sizes, and a live resize;
 - no errors in the console, and about 60 FPS.
 
@@ -52,3 +73,5 @@ Some things look like bugs but match the originals:
 - The village map has no walls along its edges: walking off the top leads into black, as in the
   Godot 4 demo.
 - The Godot 3 monsters always play their "down" walk, whichever way they move.
+- Some Godot 3 lanes are just wider than the player's body (Godot 3's player is a 10x8 box, ours a
+  14px circle): a tight squeeze, but passable.
