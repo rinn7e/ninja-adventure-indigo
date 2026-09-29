@@ -91,7 +91,7 @@ counter.
 5. **`SubSystem`s** for the first feature that stands on its own (a pause menu or an inventory).
 
 Each step can be checked the way this port was: the tests, then a live playthrough
-([development.md](development.md)), and a note in
+([development-note.md](development-note.md)), and a note in
 [functional-game-dev.md](functional-game-dev.md) on what it was like.
 
 ## Still missing from Indigo

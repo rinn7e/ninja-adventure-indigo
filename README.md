@@ -142,7 +142,7 @@ Neither Godot project is included here (see [Credits](#credits)).
   Indigo counterpart, the TileMap encoding, and the draw order.
 - **[doc/code-convention.md](doc/code-convention.md)**: what this project adds to the template's
   conventions.
-- **[doc/development.md](doc/development.md)**: build gotchas, and how to check a change.
+- **[doc/development-note.md](doc/development-note.md)**: build gotchas, and how to check a change.
 - **[doc/functional-game-dev.md](doc/functional-game-dev.md)**: what porting a Godot game to a
   functional engine was like: what got better, what got harder, and the surprises.
 - **[doc/advanced-indigo-features.md](doc/advanced-indigo-features.md)**: Indigo features this game

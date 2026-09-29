@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and adher
   that wander, hurt and knock the player back, with life bars; death and revival; draining
   hearts; monsters and props resetting when the camera reaches a new screen; hit and break
   sounds; the controls tutorial.
-- `doc/development.md`: build gotchas and how to check a change.
+- `doc/development-note.md`: build gotchas and how to check a change.
 - **The Godot 3 demo's world, north of the Godot 4 village**: its map (village, lake, snow,
   rainy forest, house interior, dungeon) imported from its Godot 3 tile maps and joined to the
   Godot 4 village through a gap in the forest; its doors, music (four tracks), weather as
