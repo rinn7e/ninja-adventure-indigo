@@ -29,16 +29,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and adher
 
 - The code follows the template's layout: the Mill module, folder and package are `game`
   (`game/src/game/`), and the generated config is `BuildConfig`.
+- The README now builds on the template's README instead of repeating it.
 - The player is the Godot 3 version's green-hooded ninja (the pack's NinjaGreen) instead of the
   Godot 4 demo's helmeted NinjaBlue, which looks like a samurai.
 
 ### Fixed
 
 - The font's space is now wide enough between words (the old width was appended, not replaced).
-
-### Changed
-
-- The README now builds on the template's README instead of repeating it.
 
 ---
 
