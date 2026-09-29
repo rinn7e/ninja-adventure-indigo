@@ -1,0 +1,81 @@
+//| mvnDeps:
+//|   - "io.indigoengine:mill-indigo_mill1_3:0.30.0-M6"
+//|   - "org.typelevel::scalac-options:0.1.11"
+
+package build
+
+import mill.*
+import mill.scalalib.*
+import mill.scalajslib.*
+import mill.scalajslib.api.*
+import mill.api.BuildCtx
+import mill.scalalib.scalafmt.*
+
+import indigoplugin.*
+import org.typelevel.scalacoptions.*
+
+object ninja extends MillIndigoJS with ScalafmtModule {
+  def scalaVersion   = "3.8.4"
+  def scalaJSVersion = "1.22.0"
+
+  val indigoVersion = "0.30.0-M6"
+
+  override def scalacOptions = Task {
+    val baseOptions = ScalacOptions.tokensForVersion(
+      ScalaVersion.unsafeFromString(scalaVersion()),
+      ScalacOptions.default ++ ScalacOptions.fatalWarningOptions
+    )
+
+    val excluded = Set(
+      "-Xfatal-warnings",
+      "-Wunused:all",
+      "-Wunused:locals",
+      "-Wunused:params",
+      "-Wunused:explicits",
+      "-Wnonunit-statement"
+    )
+
+    super.scalacOptions() ++ baseOptions.filterNot(excluded.contains) ++ Seq("-Werror")
+  }
+
+  def indigoAssets =
+    Task.Source(BuildCtx.workspaceRoot / "ninja" / "assets")
+
+  def indigoOptions(assetsDirectory: os.Path): IndigoOptions =
+    IndigoOptions.defaults
+      .withTitle("Ninja Adventure - Made with Indigo")
+      .withWindowSize(1280, 720) // as the Godot original: 320x180 game pixels at 4x
+      .withBackgroundColor("black")
+      .excludeAssets {
+        case p if p.endsWith(os.RelPath.rel / ".gitkeep")  => true
+        case p if p.endsWith(os.RelPath.rel / ".DS_Store") => true
+        case _                                             => false
+      }
+
+  def indigoGenerators(assetsDirectory: os.Path): IndigoGenerators =
+    IndigoGenerators("ninja.generated")
+      .generateConfig("NinjaConfig")
+      .listAssets("Assets")
+      .embedFont(
+        "NormalFont",
+        BuildCtx.workspaceRoot / "ninja" / "fonts" / "font_normal.ttf",
+        FontOptions("normal font", 9, CharSet.ASCII).withColor(RGB.White).noAntiAliasing,
+        assetsDirectory / "generated"
+      )
+
+  def mvnDeps =
+    Seq(
+      mvn"io.indigoengine::indigo::$indigoVersion",
+      mvn"io.indigoengine::indigo-extras::$indigoVersion"
+    )
+
+  object test extends ScalaJSTests {
+    def mvnDeps = Seq(
+      mvn"org.scalameta::munit::1.2.2"
+    )
+
+    override def moduleKind = Task(ModuleKind.CommonJSModule)
+
+    def testFramework = Task("munit.Framework")
+  }
+}
