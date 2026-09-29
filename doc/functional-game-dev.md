@@ -197,6 +197,9 @@ choice.
 
 ## If we did it again
 
+(The features below, and what a larger game would need to test them, are listed in
+[advanced-indigo-features.md](advanced-indigo-features.md).)
+
 What we'd try, keeping what worked (pure logic, the timestamp pattern, tests without the engine):
 
 - **Performers for the cast.** Monsters, villagers and props as `StageManager` performers that

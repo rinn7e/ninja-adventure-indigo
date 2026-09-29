@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and adher
   talking range, and a dialogue box with portraits; Space talks next to a villager.
 - Walls along every map edge that opened onto nothing.
 - `doc/functional-game-dev.md`: notes on functional game development from this port.
+- `doc/advanced-indigo-features.md`: Indigo features not used yet, to be tested in a larger game.
 - **Play it online**: every push to `master` runs the tests, builds the optimised game and
   publishes it to GitHub Pages (`.github/workflows/pages.yml`).
 - F3 shows the player's position; `game/tools/route.py` and `game/tools/live.js` play the game

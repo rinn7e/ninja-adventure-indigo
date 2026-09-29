@@ -145,6 +145,8 @@ Neither Godot project is included here (see [Credits](#credits)).
 - **[doc/development.md](doc/development.md)**: build gotchas, and how to check a change.
 - **[doc/functional-game-dev.md](doc/functional-game-dev.md)**: what porting a Godot game to a
   functional engine was like: what got better, what got harder, and the surprises.
+- **[doc/advanced-indigo-features.md](doc/advanced-indigo-features.md)**: Indigo features this game
+  doesn't use yet (performers, signals, clips, automata, subsystems), to be tested in a larger game.
 
 **Where to start in the code:** `game/src/game/scene/worldscene/Update.scala` is the game
 logic; the rest follows the template's layout (`common/constant/Village.scala`,
