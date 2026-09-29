@@ -1,6 +1,10 @@
 # ninja-adventure-indigo
 
 [![AI-DECLARATION: pair](https://img.shields.io/badge/䷼%20AI--DECLARATION-pair-ffedd5?labelColor=ffedd5)](AI-DECLARATION.md)
+[![Play on GitHub Pages](https://github.com/rinn7e/ninja-adventure-indigo/actions/workflows/pages.yml/badge.svg)](https://github.com/rinn7e/ninja-adventure-indigo/actions/workflows/pages.yml)
+
+**▶ [Play it in your browser](https://rinn7e.com/ninja-adventure-indigo/)** (keyboard or gamepad; click the page
+first, then press Space)
 
 A clone of **[Ninja Adventure](https://pixel-boy.itch.io/ninja-adventure-asset-pack)**, the demo
 game Pixel-boy made in Godot for his free asset pack, rewritten in **Scala 3** with
@@ -114,6 +118,7 @@ Requirements and commands are the template's
 ./mill game.test          # unit tests
 ./mill game.indigoBuild   # build the site into out/game/indigoBuild.dest
 ./mill game.indigoRun     # desktop app (Electron)
+./mill game.indigoBuildFull  # the optimised build, as published to GitHub Pages
 python3 -m http.server 8787 --directory out/game/indigoBuild.dest
 ```
 

@@ -1,0 +1,62 @@
+# Tests the game, builds it fully optimised, and publishes it to GitHub Pages, so it can be played
+# at https://rinn7e.com/ninja-adventure-indigo/.
+name: Play on GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; a newer push replaces a queued one, but never cancels a running one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Mill and the Scala compiler run on a JDK; the Scala.js tests run on Node.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/coursier
+            ~/.cache/mill
+          key: mill-${{ runner.os }}-${{ hashFiles('build.mill', '.mill-version') }}
+          restore-keys: mill-${{ runner.os }}-
+
+      - name: Test
+        run: ./mill --no-server game.test
+
+      - name: Build (fully optimised)
+        run: ./mill --no-server game.indigoBuildFull
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out/game/indigoBuildFull.dest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
