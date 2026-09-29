@@ -129,30 +129,71 @@ cost much here; the drawing strategy mattered far more.
 
 ## Whose fault is it: functional style, Indigo, or us?
 
-Not every downside above is the price of functional programming. Sorted honestly:
+Not every downside above is the price of functional programming, and not every one is Indigo's.
+Checked against Indigo 0.30.0-M6's source, they sort into four groups.
 
-| Downside | Cause | What Indigo offers |
-| --- | --- | --- |
-| No `move_and_slide` for polygons | **Indigo's gap.** `indigo-physics` is a rigid-body simulation with boxes and circles, and has no character controller | Nothing closer; our own `Collision.scala` is the way |
-| Drawing order (y-sorting) is ours to build | **Indigo's gap**, partly. Layers order the frame, but there's no y-sort | Performers (below) are drawn in `PerformerDepth` order, an integer you'd set from y |
-| Every "on enter" needs remembered state | **Functional style.** A pure update compares this frame with the last one; nothing fires by itself | Events (`GlobalEvent`, subsystems) can carry "it happened" once you detect it, but the detection is still yours |
-| One long pipeline whose order matters | **Our choice.** The template keeps the whole game in one TEA `Model` with one `update`, for testability | `SubSystem`s run their own model and update; `StageManager` performers update themselves |
-| Composition by hand, a 588-line update | **Our choice, and our unfamiliarity.** Indigo 0.30 has an entity system we didn't use: `StageManager` with *performers* (Lead, Extra, Stunt, Narrator) that update and draw themselves, can have physics colliders, and can listen to and emit events: the closest thing to Godot's nodes | `indigoextras.performers` |
-| Hand-written tweens and easing | **Our unfamiliarity**, mostly (see above) | `Signal`, `SignalFunction`, `Timeline` |
-| Hand-cropped sprite-sheet animation | **Our unfamiliarity** | `Clip` and `Sprite` play sheet animations |
-| Short-lived effects (impacts, bursts) managed in the model | **Our choice** | The `Automata` subsystem spawns and retires short-lived effects driven by signals |
-| Frame-rate-dependent code | **Godot's code**, not Indigo: Indigo hands every update a delta time | - |
-| `\|+\|` keeps a layer's first camera | **Our unfamiliarity** with a merge rule that isn't prominent in the docs | - |
-| Performance | **Neither.** `CloneTiles` is Indigo's documented answer, and it was enough | `CloneTiles`, static batches |
-| 64 KB limit on generated string literals | **Scala.js**, not Indigo or FP | - |
+### What Indigo is truly missing
 
-So: two real gaps in Indigo (character physics, y-sorting), one real cost of the functional style
-(state for every "on enter", and an explicit order), and several things that were our choice or
-our unfamiliarity. The biggest of those is structural: the template's "one model, one update"
-TEA shape makes everything testable and visible, but it also means not using Indigo's own
-composition tools (subsystems, performers, automata). A version built on performers would read
-more like the Godot original, with each monster, villager and prop updating and drawing itself,
-at the cost of state living in more than one place.
+These are real gaps; knowing Indigo better would not have helped.
+
+- **Character physics for polygons.** `indigo-physics` is a rigid-body simulation with box and
+  circle colliders only, and has no character controller like Godot's `move_and_slide`. The
+  tileset's collision shapes are mostly non-rectangular, so our own polygon move-and-slide
+  (`Collision.scala`, with a spatial index) was necessary.
+- **Y-sorting.** Indigo orders the frame by layers and by the order nodes are listed; nothing sorts
+  them by position. We sort tiles and characters by y every frame ourselves. (Performers, below,
+  are drawn in an integer `PerformerDepth` order, which you could set from y, but that's still
+  sorting by hand.)
+
+### What we didn't know about Indigo
+
+These existed, and we rebuilt them because we didn't know or didn't look:
+
+- **An entity system: `StageManager` and performers** (`indigoextras.performers`, new in 0.30).
+  Performers (Lead, Extra, Stunt, Narrator) update and draw themselves, have a draw depth, can
+  have a physics collider, and can listen to and emit events: the closest thing to Godot's nodes.
+  Monsters, villagers and props could have been performers instead of lists in one 588-line
+  update.
+- **Time-based values: `Signal`, `SignalFunction` and `Timeline`.** `Signal` has `Lerp`,
+  `EaseIn`, `EaseOut`, `EaseInOut`, `Pulse`, and time clamping and wrapping; `Timeline` animates
+  values over time windows. We hand-wrote every ease. (Godot's specific curves, circular, elastic
+  and quartic out-in, aren't built in, so those would still be hand-written.)
+- **Sprite-sheet animation: `Clip` and `Sprite`.** We computed crop rectangles for every frame by
+  hand.
+- **Short-lived effects: the `Automata` subsystem**, which spawns and retires effects like impacts
+  and bursts, driven by signals. We kept them in the model.
+- **A merge rule:** combining scene fragments with `|+|` keeps the *first* camera a layer is given.
+  We found it by breaking the camera.
+
+### The price of the functional style
+
+These come from keeping `update` pure, whatever the engine:
+
+- **"On enter" needs remembered state.** A pure update only sees "overlapping now"; to act once on
+  entering, it must remember the last frame (a monster's `touching`, `confirmHeld`). Indigo's
+  events can carry "it happened" onward, but detecting it is still yours.
+- **The order of the frame is explicit.** Every step runs in an order written in one place, and
+  moving one line changes behaviour. That's honest, and arguably a feature, but it's work.
+
+### Our deliberate choice
+
+- **One model, one update.** The template keeps the whole game in a single TEA `Model` and
+  `update`, so every rule is a pure function you can test and every piece of state is visible in
+  one place. That shape is also why we didn't reach for Indigo's composition tools (subsystems,
+  performers, automata): they keep state inside themselves. A performer-based version would read
+  more like the Godot original, at the cost of state living in more than one place.
+
+### Not Indigo's fault at all
+
+- **Frame-rate-dependent code** came from Godot 3's scripts; Indigo hands every update a delta
+  time.
+- **The 64 KB limit** on the generated data's string literals comes from Scala.js.
+- **Performance** was fine: `CloneTiles` in static batches is Indigo's documented answer for big
+  tile maps, and it held 60 FPS with 8,000 tiles.
+
+So, of the real costs: two are Indigo's gaps (polygon character physics, y-sorting), two are the
+functional style's (edge detection, explicit order), and the rest were our unfamiliarity or our
+choice.
 
 ## If we did it again
 
