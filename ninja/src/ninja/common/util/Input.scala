@@ -37,6 +37,11 @@ object Input:
   def isAttackHeld(input: InputState): Boolean =
     input.keyboard.keysAreDown(Key.SPACE) || input.gamepad.buttons.Cross
 
+  /** Talking and moving through a conversation: Space, Enter or Z, or the gamepad's Cross (A). */
+  def isTalkHeld(input: InputState): Boolean =
+    input.keyboard.keysAreDown(Key.SPACE) || input.keyboard.keysAreDown(Key.ENTER) ||
+      input.keyboard.keysAreDown(Key.KEY_Z) || input.gamepad.buttons.Cross
+
   def isConfirm(event: GlobalEvent): Boolean =
     event match
       case KeyboardEvent.KeyUp(Key.SPACE | Key.ENTER | Key.KEY_Z) => true

@@ -27,6 +27,6 @@ class UpdateTests extends munit.FunSuite {
     val confirm = KeyboardEvent.KeyUp(Key.SPACE)
     assertEquals(subscriptions(start, InputState.default)(confirm), Some(Msg.TitleSceneMsg(TitleScene.Msg.Start)))
     val inWorld = update(shared, Msg.TitleSceneMsg(TitleScene.Msg.Start), start).unsafeGet
-    assertEquals(subscriptions(inWorld, InputState.default)(FrameTick), Some(Msg.WorldSceneMsg(WorldScene.Msg.Tick(Vector2.zero, false))))
+    assertEquals(subscriptions(inWorld, InputState.default)(FrameTick), Some(Msg.WorldSceneMsg(WorldScene.Msg.Tick(Vector2.zero, false, false))))
   }
 }

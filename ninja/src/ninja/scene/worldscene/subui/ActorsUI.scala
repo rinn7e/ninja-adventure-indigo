@@ -2,12 +2,12 @@ package ninja.scene.worldscene.subui
 
 import indigo.*
 import ninja.common.Types.*
-import ninja.common.constant.Combat
+import ninja.common.constant.{Combat, NorthVillage}
 import ninja.common.util.Motion.directionOf
 import ninja.generated.Assets
 import ninja.scene.worldscene.Type.*
 import ninja.scene.worldscene.Update.{isGone, isSwinging}
-import ninja.scene.worldscene.common.Util.spriteCentre
+import ninja.scene.worldscene.common.Util.{VillagerPose, spriteCentre, villagerPose}
 import ninja.ui.CharacterSpriteUI.{characterUI, pigUI, shadowUI}
 
 /** Everything that moves or breaks, as (sort y, nodes) so the scene can y-sort it with the wall
@@ -37,7 +37,55 @@ object ActorsUI:
     ) ++ model.props.zipWithIndex.map { case (prop, i) =>
       (prop.position.y, propUI(prop, i, now))
     } ++
-      model.monsters.filterNot(isGone(now)).map(m => (m.position.y, monsterUI(m, now)))
+      model.monsters.filterNot(isGone(now)).map(m => (m.position.y, monsterUI(m, now))) ++
+      NorthVillage.villagers.zip(model.villagers).map { case (v, s) =>
+        val pose = villagerPose(now)(v, s)
+        (pose.position.y, villagerUI(v, pose))
+      }
+
+  // --- Villagers (from the Godot 3 version) --------------------------------
+
+  /** A villager, 8 pixels above its feet (Godot 3's `Npc/Sprite`), at 5 frames a second. */
+  private def villagerUI(villager: Villager, pose: VillagerPose): Batch[SceneNode] =
+    val step = (pose.clock * 5).toInt
+    val (crop, extraY) =
+      villager.sheetKind match
+        case SheetKind.Standard =>
+          (Point(pose.facing.column * 16, if pose.walking then (step % 4) * 16 else 0), 0)
+        case SheetKind.BreathingIdle =>
+          (Point(pose.facing.column * 16, (step % 2) * 16), 0)
+        case SheetKind.Strip =>
+          (Point(if pose.walking then (step % 2) * 16 else 0, 0), 3) // the dog's `offset` (0, 3)
+    val feet = Point(Math.round(pose.position.x).toInt, Math.round(pose.position.y).toInt)
+    Batch(
+      shadowUI(pose.position),
+      Graphic(16, 16, Material.Bitmap(villager.sheet))
+        .withCrop(crop.x, crop.y, 16, 16)
+        .withRef(8, 8)
+        .flipHorizontal(pose.flip)
+        .moveTo(feet + Point(0, -8 + extraY))
+    )
+
+  /** Godot 3's `DialogInfo`: a speech bubble (4 frames, 5 a second) 24 pixels above the villager in
+    * talking range, popping up with an elastic ease over 0.5s. Hidden during a conversation.
+    */
+  def speechBubbleUI(model: Model, now: Seconds): Batch[SceneNode] =
+    model.nearVillager match
+      case Some((i, since)) if model.talk.isEmpty =>
+        val villager = NorthVillage.villagers(i)
+        val pose     = villagerPose(now)(villager, model.villagers(i))
+        val t        = ((now - since).toDouble / 0.5).min(1)
+        val elastic =
+          if t >= 1 then 1.0
+          else Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * (2 * Math.PI / 3)) + 1
+        val at = pose.position + villager.talkOffset + Vector2(0, -24 + 10 * (1 - elastic))
+        Batch(
+          Graphic(20, 16, Material.Bitmap(Assets.assets.dialogInfo))
+            .withCrop(((now.toDouble * 5).toInt % 4) * 20, 0, 20, 16)
+            .moveTo(Math.round(at.x).toInt - 10, Math.round(at.y).toInt - 8)
+        )
+      case _ =>
+        Batch.empty
 
   // --- Combat (from the Godot 3 version) ----------------------------------
 

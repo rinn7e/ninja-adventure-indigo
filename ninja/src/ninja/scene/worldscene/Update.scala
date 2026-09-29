@@ -2,7 +2,7 @@ package ninja.scene.worldscene
 
 import indigo.*
 import ninja.common.Types.*
-import ninja.common.constant.{Combat, Layout, Village, WorldMap}
+import ninja.common.constant.{Combat, Layout, NorthVillage, Village, WorldMap}
 import ninja.generated.Assets
 import ninja.common.util.Collision
 import ninja.common.util.Motion.*
@@ -68,6 +68,10 @@ object Update:
       lifeShown = maxLife.toDouble,
       resetPending = false,
       tutorial = Tutorial(moved = false, attacked = false, hidingAt = None),
+      villagers = NorthVillage.villagers.map(_ => VillagerState(now, None, None)),
+      talk = None,
+      nearVillager = None,
+      confirmHeld = false,
       debug = false,
       enteredAt = now
     ).pipe(enterZones(now)).pipe(Outcome(_))
@@ -95,15 +99,20 @@ object Update:
       case Msg.ToggleDebug =>
         Outcome(model.copy(debug = !model.debug))
 
-      case Msg.Tick(move, attack) =>
+      case Msg.Tick(move, attack, confirm) =>
         val now = shared.now
         val dt  = shared.delta.toDouble
+        // Talking takes the player's input: no walking, and Space talks rather than attacks.
+        val talking = model.talk.isDefined || model.nearVillager.isDefined
 
         model
           .pipe(revive(now))
           .pipe(noteTutorial(move, attack))
-          .pipe(swing(attack, now))
-          .pipe(movePlayer(move, dt, now))
+          .pipe(talk(confirm && !model.confirmHeld, now))
+          .pipe(swing(attack && !talking, now))
+          .pipe(movePlayer(if model.talk.isDefined then Vector2.zero else move, dt, now))
+          .pipe(approachVillagers(now))
+          .pipe(_.copy(confirmHeld = confirm))
           .pipe(strike(now))
           .pipe(breakProps(now))
           .pipe(teleport(now))
@@ -157,7 +166,8 @@ object Update:
       val walked =
         if isSwinging(now)(model) then model.player.copy(velocity = Vector2.zero)
         else walk(move, Village.playerSpeed, dt, now)(model.player)
-      val props = model.props.filter(_.brokenAt.isEmpty).map(propBody)
+      val props = model.props.filter(_.brokenAt.isEmpty).map(propBody) ++
+        villagerPoses(now)(model).map(villagerBody)
       val (position, velocity) =
         Collision.moveAndSlide(
           walked.velocity + model.push,
@@ -428,6 +438,75 @@ object Update:
         Option.when(broke)(PlaySound(Assets.assets.sndGrass, Volume.Max))
       ).collect { case Some(e) => e }
     )
+
+  // --- Villagers (from the Godot 3 version) ----------------------------------
+
+  def villagerPoses(now: Seconds)(model: Model): Batch[VillagerPose] =
+    NorthVillage.villagers.zip(model.villagers).map { case (v, s) => villagerPose(now)(v, s) }
+
+  /** Godot 3's `DialogArea`: the villager whose talk area the player is in (the speech bubble pops
+    * up above it).
+    */
+  def approachVillagers(now: Seconds)(model: Model): Model =
+    val body = playerBody(model.player.position)
+    val near = NorthVillage.villagers
+      .zip(villagerPoses(now)(model))
+      .toList
+      .indexWhere { case (v, pose) => talkArea(v, pose).overlaps(body) }
+    model.copy(nearVillager =
+      if near < 0 then None
+      else model.nearVillager.filter(_._1 == near).orElse(Some((near, now)))
+    )
+
+  /** How many characters of a line have typed out: 40 a second. */
+  val typingSpeed: Double = 40
+
+  def isTyped(talk: Talk, now: Seconds): Boolean =
+    (now - talk.since).toDouble * typingSpeed >= NorthVillage
+      .villagers(talk.villager)
+      .lines(talk.line)
+      .length
+
+  /** Confirm next to a villager starts a conversation: it stops and turns to the player. In one,
+    * confirm finishes typing the line, then goes to the next; after the last, the villager goes
+    * back to its routine.
+    */
+  def talk(pressed: Boolean, now: Seconds)(model: Model): Model =
+    if !pressed then model
+    else
+      model.talk match
+        case Some(t) if !isTyped(t, now) =>
+          model.copy(talk = Some(t.copy(since = now - Seconds(1000))))
+
+        case Some(t) if t.line + 1 < NorthVillage.villagers(t.villager).lines.length =>
+          model.copy(talk = Some(Talk(t.villager, t.line + 1, now)))
+
+        case Some(t) =>
+          model.copy(
+            talk = None,
+            villagers = model.villagers.zipWithIndex.map { case (s, i) =>
+              if i != t.villager then s
+              else VillagerState(s.shift + s.pausedAt.fold(Seconds.zero)(now - _), None, None)
+            }
+          )
+
+        case None =>
+          model.nearVillager match
+            case Some((i, _)) =>
+              val pose = villagerPose(now)(NorthVillage.villagers(i), model.villagers(i))
+              model.copy(
+                talk = Some(Talk(i, 0, now)),
+                villagers = model.villagers.zipWithIndex.map { case (s, j) =>
+                  if j != i then s
+                  else
+                    s.copy(
+                      pausedAt = Some(now),
+                      facingPlayer = Some(facingTowards(model.player.position)(pose.position))
+                    )
+                }
+              )
+            case None =>
+              model
 
   // --- Tutorial -----------------------------------------------------------
 

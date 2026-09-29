@@ -41,6 +41,18 @@ object Type:
       diedAt: Option[Seconds]
   ) derives CanEqual
 
+  /** A villager's routine clock: its routine runs on `now - shift`, and stops at `pausedAt` while
+    * it talks (facing the player, `facingPlayer`).
+    */
+  final case class VillagerState(
+      shift: Seconds,
+      pausedAt: Option[Seconds],
+      facingPlayer: Option[Facing]
+  ) derives CanEqual
+
+  /** A conversation: which villager, which of its lines, and when that line started typing. */
+  final case class Talk(villager: Int, line: Int, since: Seconds) derives CanEqual
+
   /** The tutorial banner (Godot 3's `Tuto`): hidden once the player has moved and attacked. */
   final case class Tutorial(moved: Boolean, attacked: Boolean, hidingAt: Option[Seconds])
       derives CanEqual
@@ -87,13 +99,21 @@ object Type:
       // Set when the camera moves to another screen: once it arrives, monsters and props reset.
       resetPending: Boolean,
       tutorial: Tutorial,
+      // Villagers (from the Godot 3 version): their routine clocks, the conversation, the one in
+      // talking range (and since when, for the speech bubble's pop), and whether confirm is held.
+      villagers: Batch[VillagerState],
+      talk: Option[Talk],
+      nearVillager: Option[(Int, Seconds)],
+      confirmHeld: Boolean,
       debug: Boolean,
       enteredAt: Seconds
   ) derives CanEqual
 
   enum Msg derives CanEqual:
-    /** Every frame, with the direction the player is pushing and whether attack is held. */
-    case Tick(move: Vector2, attack: Boolean)
+    /** Every frame, with the direction the player is pushing, whether attack is held, and whether
+      * confirm (talk / next line) is held.
+      */
+    case Tick(move: Vector2, attack: Boolean, confirm: Boolean)
 
     /** F3: show or hide the debug overlay (the player's world position). */
     case ToggleDebug

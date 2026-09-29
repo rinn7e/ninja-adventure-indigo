@@ -108,6 +108,22 @@ ASSET_FILES_V3 = {
     "Resource/Music/18 - Aquatic.ogg": "music_aquatic.ogg",
     "Resource/Music/13 - Mystical.ogg": "music_mystical.ogg",
     "Resource/Music/16 - Melancholia.ogg": "music_melancholia.ogg",
+    # Villagers (sprite sheet and face portrait) and the dialogue box.
+    "World/Actor/Npc/Samurai/SpriteSheet.png": "npc_samurai.png",
+    "World/Actor/Npc/Samurai/Faceset.png": "face_samurai.png",
+    "World/Actor/Npc/RedNinja/SpriteSheet.png": "npc_red_ninja.png",
+    "World/Actor/Npc/RedNinja/Faceset.png": "face_red_ninja.png",
+    "World/Actor/Npc/OldWoman/SpriteSheet.png": "npc_old_woman.png",
+    "World/Actor/Npc/OldWoman/Faceset.png": "face_old_woman.png",
+    "World/Actor/Npc/Warrior/SpriteSheet.png": "npc_warrior.png",
+    "World/Actor/Npc/Warrior/Faceset.png": "face_warrior.png",
+    "World/Actor/Npc/Dog/SpriteSheet.png": "npc_dog.png",
+    "World/Actor/Npc/Dog/Faceset.png": "face_dog.png",
+    "World/Actor/Npc/Monk2/SpriteSheet.png": "npc_monk.png",
+    "World/Actor/Npc/Monk2/Faceset.png": "face_monk.png",
+    "Hud/DialogBox/NinePathRect/DialogBoxFaceset.png": "dialog_box.png",
+    "Hud/DialogBox/Arrow.png": "dialog_arrow.png",
+    "Hud/DialogBox/DialogInfo.png": "dialog_info.png",
 }
 FONT_FILES = {"theme/font_normal.ttf": "font_normal.ttf"}
 

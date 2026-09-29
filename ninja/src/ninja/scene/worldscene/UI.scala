@@ -8,7 +8,8 @@ import ninja.common.util.Screen
 import ninja.scene.worldscene.Type.*
 import ninja.scene.worldscene.common.Util.viewTopLeft
 import ninja.common.constant.Combat
-import ninja.scene.worldscene.subui.ActorsUI.{actorsUI, impactsUI}
+import ninja.scene.worldscene.subui.ActorsUI.{actorsUI, impactsUI, speechBubbleUI}
+import ninja.scene.worldscene.subui.DialogueUI.dialogueUI
 import ninja.scene.worldscene.subui.TutorialUI.tutorialUI
 import ninja.scene.worldscene.subui.TilemapUI.{
   floorUI,
@@ -93,13 +94,13 @@ object UI:
       Layers.world -> Layer
         .Content(
           (floorUI(now) ++ northFloorUI :+ groundUI) ++ sortedUI ++ topUI ++ northTopUI ++
-            impactsUI(model, now)
+            impactsUI(model, now) ++ speechBubbleUI(model, now)
         )
         .withCamera(Screen.centredCamera(shared.viewport)(viewTopLeft(now)(model.camera))),
       Layers.weather -> Layer.Content(skyWeatherUI(model.environment, model.environmentSince, now)),
       Layers.ui -> Layer.Content(
         heartBarUI(model.lifeShown.toInt, Update.maxLife, Point(3, 3)) ++
-          tutorialUI(model.tutorial, now) ++ debugUI(model)
+          tutorialUI(model.tutorial, now) ++ dialogueUI(model.talk, now) ++ debugUI(model)
       ),
       Layers.screen -> Layer.Content(
         teleportUI(model.teleportedAt, now) ++ reviveUI(model.revivedAt, now)

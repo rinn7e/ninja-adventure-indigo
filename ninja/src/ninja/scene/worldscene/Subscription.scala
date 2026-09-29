@@ -10,6 +10,9 @@ object Subscription:
     * input every frame too).
     */
   def subscriptions(model: Model, input: InputState): GlobalEvent => Option[Msg] =
-    case FrameTick => Some(Msg.Tick(Input.moveVector(input), Input.isAttackHeld(input)))
+    case FrameTick =>
+      Some(
+        Msg.Tick(Input.moveVector(input), Input.isAttackHeld(input), Input.isTalkHeld(input))
+      )
     case KeyboardEvent.KeyUp(Key.F3) => Some(Msg.ToggleDebug)
     case _                           => None

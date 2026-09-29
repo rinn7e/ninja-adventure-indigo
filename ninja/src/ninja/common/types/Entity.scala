@@ -26,3 +26,36 @@ object Entity:
       reach: Double,
       keepsOffset: Boolean
   ) derives CanEqual
+
+  /** How a villager's sprite sheet is laid out (Godot 3's `Npc` sprite frames): the usual 4 columns
+    * (down, up, left, right) with rows 0-3 walking; a two-row breathing idle (OldWoman); or a
+    * two-frame strip that flips to face right (the dog).
+    */
+  enum SheetKind derives CanEqual:
+    case Standard, BreathingIdle, Strip
+
+  /** A villager's looping `Idle` animation (Godot 3's `AnimationPlayer` tracks): positions eased
+    * linearly between keys, and facing, walking and flip set at theirs. Times in seconds.
+    */
+  final case class Routine(
+      length: Double,
+      positions: Batch[(Double, Vector2)],
+      facings: Batch[(Double, Facing)],
+      walking: Batch[(Double, Boolean)],
+      flips: Batch[(Double, Boolean)]
+  ) derives CanEqual
+
+  /** A villager of the Godot 3 version (`Npc` with a `DialogArea`): where it stands, its routine,
+    * and what it says (its lines are ours: the Godot 3 project's dialogue files aren't in it).
+    */
+  final case class Villager(
+      name: String,
+      sheet: AssetName,
+      sheetKind: SheetKind,
+      faceset: AssetName,
+      position: Vector2,
+      facing: Facing,
+      routine: Option[Routine],
+      talkOffset: Vector2,
+      lines: Batch[String]
+  ) derives CanEqual
