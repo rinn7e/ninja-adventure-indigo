@@ -8,7 +8,7 @@ object Entity:
     * tileset's scene collection: 1 crate, 2 grass, 3 pot.
     */
   enum PropKind derives CanEqual:
-    case Crate, Grass, Pot
+    case Crate, Grass, Pot, Plant // Plant: the Godot 3 version's `DestroyableItem`
 
   /** `brokenAt` is when it was destroyed; it then plays its break effect and disappears. */
   final case class Prop(kind: PropKind, position: Vector2, brokenAt: Option[Seconds])
@@ -59,3 +59,9 @@ object Entity:
       talkOffset: Vector2,
       lines: Batch[String]
   ) derives CanEqual
+
+  /** A smoke plume (the Godot 3 version's `Smoke` particles): puffs rising from `position`, tinted,
+    * either y-sorted with the scene or drawn over everything (`onTop`, a chimney's).
+    */
+  final case class SmokeEmitter(position: Vector2, puffs: Int, tint: RGBA, onTop: Boolean)
+      derives CanEqual

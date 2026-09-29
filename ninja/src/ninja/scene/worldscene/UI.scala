@@ -8,7 +8,7 @@ import ninja.common.util.Screen
 import ninja.scene.worldscene.Type.*
 import ninja.scene.worldscene.common.Util.viewTopLeft
 import ninja.common.constant.Combat
-import ninja.scene.worldscene.subui.ActorsUI.{actorsUI, impactsUI, speechBubbleUI}
+import ninja.scene.worldscene.subui.ActorsUI.{actorsUI, impactsUI, smokeOnTopUI, speechBubbleUI}
 import ninja.scene.worldscene.subui.DialogueUI.dialogueUI
 import ninja.scene.worldscene.subui.TutorialUI.tutorialUI
 import ninja.scene.worldscene.subui.TilemapUI.{
@@ -94,7 +94,7 @@ object UI:
       Layers.world -> Layer
         .Content(
           (floorUI(now) ++ northFloorUI :+ groundUI) ++ sortedUI ++ topUI ++ northTopUI ++
-            impactsUI(model, now) ++ speechBubbleUI(model, now)
+            impactsUI(model, now) ++ smokeOnTopUI(now) ++ speechBubbleUI(model, now)
         )
         .withCamera(Screen.centredCamera(shared.viewport)(viewTopLeft(now)(model.camera))),
       Layers.weather -> Layer.Content(skyWeatherUI(model.environment, model.environmentSince, now)),

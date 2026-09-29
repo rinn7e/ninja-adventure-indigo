@@ -46,7 +46,7 @@ object Update:
       follower = Actor.at(Village.followerStart),
       pig = Animal(Village.pigStart, Vector2.zero, flip = false, moving = false, now),
       patroller = Patroller(Actor.at(Village.patrollerStart), 0, 1, None),
-      props = Village.props,
+      props = WorldMap.props,
       camera = CameraGrid(cellOf(Village.playerStart), Vector2.zero, now - Layout.cameraSlide),
       teleportedAt = None,
       zone = None,

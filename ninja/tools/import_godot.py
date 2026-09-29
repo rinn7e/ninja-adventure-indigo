@@ -124,6 +124,7 @@ ASSET_FILES_V3 = {
     "Hud/DialogBox/NinePathRect/DialogBoxFaceset.png": "dialog_box.png",
     "Hud/DialogBox/Arrow.png": "dialog_arrow.png",
     "Hud/DialogBox/DialogInfo.png": "dialog_info.png",
+    "World/Ld/DestroyableItem/Plant/Sprite.png": "plant.png",
 }
 FONT_FILES = {"theme/font_normal.ttf": "font_normal.ttf"}
 

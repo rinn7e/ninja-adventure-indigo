@@ -220,3 +220,29 @@ object NorthVillage:
         "This house has seen many adventurers. Few came back from the dungeon unscathed."
       ).copy(talkOffset = Vector2(0, -3))
     )
+
+  /** `Village.tscn`'s `Destroyable` plants, in four 2x2 clumps. */
+  val props: Batch[Prop] =
+    Batch(
+      (752, 808),
+      (768, 808),
+      (752, 824),
+      (768, 824), // by the old woman
+      (824, 824),
+      (840, 824),
+      (824, 808),
+      (840, 808),
+      (840, 632),
+      (856, 632),
+      (840, 648),
+      (856, 648) // by the dog
+    ).map { case (x, y) => Prop(PropKind.Plant, at(x, y), brokenAt = None) }
+
+  /** `Village.tscn`'s smoke: a chimney's (its `modulate` replaces the scene's grey with a warm
+    * white; over everything) and the rainy forest's campfire (grey, two puffs).
+    */
+  val smokes: Batch[SmokeEmitter] =
+    Batch(
+      SmokeEmitter(at(825, 541), 4, RGBA(0.9, 0.9, 0.8, 1), onTop = true),
+      SmokeEmitter(at(440, 770), 2, RGBA(0.592, 0.592, 0.592, 1), onTop = false)
+    )

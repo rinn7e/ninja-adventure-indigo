@@ -17,6 +17,10 @@ object WorldMap:
   val zones: Batch[Zone] =
     Village.zones ++ NorthVillage.zones
 
+  /** Both villages' destroyable props. */
+  val props: Batch[Prop] =
+    Village.props ++ NorthVillage.props
+
   val monsterStarts: Batch[Vector2] =
     NorthVillage.monsterStarts
 

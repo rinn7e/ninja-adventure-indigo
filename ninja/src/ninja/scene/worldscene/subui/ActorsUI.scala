@@ -38,10 +38,33 @@ object ActorsUI:
       (prop.position.y, propUI(prop, i, now))
     } ++
       model.monsters.filterNot(isGone(now)).map(m => (m.position.y, monsterUI(m, now))) ++
+      NorthVillage.smokes.filterNot(_.onTop).map(s => (s.position.y, smokeUI(s, now))) ++
       NorthVillage.villagers.zip(model.villagers).map { case (v, s) =>
         val pose = villagerPose(now)(v, s)
         (pose.position.y, villagerUI(v, pose))
       }
+
+  // --- Smoke (from the Godot 3 version) -------------------------------------
+
+  /** Godot 3's `Smoke`: each puff lives 2s (lifetime 1 at speed scale 0.5), rising at 30 px/s
+    * within 20° of straight up, slowed by damping (5), playing its 6 frames of 32x32.
+    */
+  def smokeUI(smoke: SmokeEmitter, now: Seconds): Batch[SceneNode] =
+    Batch.fromIndexedSeq((0 until smoke.puffs).map { i =>
+      val clock = now.toDouble / 2 + i.toDouble / smoke.puffs
+      val life  = clock - Math.floor(clock)
+      val angle =
+        -Math.PI / 2 + (noise(i * 31 + Math.floor(clock).toInt, 3) * 2 - 1) * Math.toRadians(20)
+      val distance = 30 * life - 2.5 * life * life
+      val at       = smoke.position + Vector2(Math.cos(angle), Math.sin(angle)) * distance
+      Graphic(32, 32, Material.ImageEffects(Assets.assets.fxSmoke).withTint(smoke.tint))
+        .withCrop((life * 6).toInt.min(5) * 32, 0, 32, 32)
+        .moveTo(Math.round(at.x).toInt - 16, Math.round(at.y).toInt - 16)
+    })
+
+  /** The smoke plumes drawn over everything (chimneys). */
+  def smokeOnTopUI(now: Seconds): Batch[SceneNode] =
+    NorthVillage.smokes.filter(_.onTop).flatMap(smokeUI(_, now))
 
   // --- Villagers (from the Godot 3 version) --------------------------------
 
@@ -229,6 +252,8 @@ object ActorsUI:
         PropLook(Assets.assets.grass, Size(16, 16), Assets.assets.particleGrass, 6, Size(12, 13))
       case PropKind.Pot =>
         PropLook(Assets.assets.pot, Size(14, 16), Assets.assets.particlePot, 6, Size(14, 14))
+      case PropKind.Plant =>
+        PropLook(Assets.assets.plant, Size(16, 14), Assets.assets.particleGrass, 6, Size(12, 13))
       case PropKind.Crate =>
         PropLook(Assets.assets.crate, Size(14, 15), Assets.assets.particleRock, 5, Size(16, 16))
 
