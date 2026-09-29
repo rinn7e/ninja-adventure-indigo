@@ -1,5 +1,7 @@
 # ninja-adventure-indigo
 
+[![AI-DECLARATION: pair](https://img.shields.io/badge/䷼%20AI--DECLARATION-pair-ffedd5?labelColor=ffedd5)](AI-DECLARATION.md)
+
 A clone of **[Ninja Adventure](https://pixel-boy.itch.io/ninja-adventure-asset-pack)**, the demo
 game Pixel-boy made in Godot for his free asset pack, rewritten in **Scala 3** with
 **[Indigo](https://indigoengine.io)** `0.30.0-M6`, a purely functional game engine that compiles
@@ -18,6 +20,22 @@ clock. Both versions of the Godot demo are merged into one world: the Godot 4 de
 and north of it, through a path in the forest, the older Godot 3 demo's whole world, each matched
 as closely as possible.
 
+<p align="center">
+  <img src="doc/screenshot/north-village.png" alt="The Godot 3 village, north of the Godot 4 one" width="100%">
+  <br><sub>The Godot 3 demo's village, reached from the Godot 4 one through the forest</sub>
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><img src="doc/screenshot/village.png" alt="The Godot 4 village" width="100%"><br><sub>The Godot 4 village: followers, props, light rays</sub></td>
+    <td width="50%"><img src="doc/screenshot/swamp.png" alt="The swamp" width="100%"><br><sub>The swamp: rain with splashes, fog, colour grading shader</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="doc/screenshot/dialogue.png" alt="Talking to a villager" width="100%"><br><sub>Villagers and the dialogue box</sub></td>
+    <td width="50%"><img src="doc/screenshot/dungeon.png" alt="The dungeon" width="100%"><br><sub>The dungeon and its Bamboo monsters</sub></td>
+  </tr>
+</table>
+
 ## What it shows about Indigo
 
 | Topic | How | Where to look |
@@ -33,12 +51,6 @@ as closely as possible.
 | Any window size | Whole-number scaling and letterboxing, per layer | `common/util/Screen.scala`, `Main.mainUI` |
 | Assets from another engine | A pure-Python importer reading Godot 3 and Godot 4 scenes | `game/tools/import_godot.py`, `godot3.py` |
 | Tests | Pure functions, so logic is tested without the engine running | `game/test/src/game/` |
-
-## Screenshots
-
-| Village (Godot 4) | Swamp | North village (Godot 3) | Dialogue | Dungeon |
-| --- | --- | --- | --- | --- |
-| ![Village](doc/screenshot/village.png) | ![Swamp](doc/screenshot/swamp.png) | ![North village](doc/screenshot/north-village.png) | ![Dialogue](doc/screenshot/dialogue.png) | ![Dungeon](doc/screenshot/dungeon.png) |
 
 ## What's in it
 
@@ -152,6 +164,11 @@ logic; the rest follows the template's layout (`common/constant/Village.scala`,
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).
+
+## AI declaration
+
+This project declares its AI usage in [AI-DECLARATION.md](AI-DECLARATION.md), following the
+[AI-DECLARATION.md](https://ai-declaration.md) standard (level: `pair`).
 
 ## License
 
