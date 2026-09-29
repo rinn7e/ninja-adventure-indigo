@@ -142,7 +142,7 @@ Not every downside above is the price of functional programming. Sorted honestly
 | Hand-cropped sprite-sheet animation | **Our unfamiliarity** | `Clip` and `Sprite` play sheet animations |
 | Short-lived effects (impacts, bursts) managed in the model | **Our choice** | The `Automata` subsystem spawns and retires short-lived effects driven by signals |
 | Frame-rate-dependent code | **Godot's code**, not Indigo: Indigo hands every update a delta time | - |
-| `|+|` keeps a layer's first camera | **Our unfamiliarity** with a merge rule that isn't prominent in the docs | - |
+| `\|+\|` keeps a layer's first camera | **Our unfamiliarity** with a merge rule that isn't prominent in the docs | - |
 | Performance | **Neither.** `CloneTiles` is Indigo's documented answer, and it was enough | `CloneTiles`, static batches |
 | 64 KB limit on generated string literals | **Scala.js**, not Indigo or FP | - |
 
