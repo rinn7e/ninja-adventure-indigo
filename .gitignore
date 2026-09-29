@@ -1,0 +1,41 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Downloaded archives (the extracted folders next to them are what's tracked;
+# the asset pack zip is ~90 MB, close to GitHub's 100 MB file limit)
+*.zip
+
+# Godot 4 (reference project in assets/NinjaAdventure Godot V4/):
+# editor cache and temp files are regenerated on import. Keep the *.import files.
+.godot/
+*.tmp
+*.translation
+export_presets.cfg
+/android/
+
+# Mill / Scala / Indigo
+out/
+.bsp/
+.bloop/
+.metals/
+.scala-build/
+.ammonite/
+.coursier/
+metals.sbt
+*.class
+*.log
+
+# Node (Scala.js tests / tooling)
+node_modules/
+
+# IDE / editor
+.idea/
+*.iml
+.vscode/
+.vim/
+*.swp
+
+# Direnv
+.direnv/
+.envrc
