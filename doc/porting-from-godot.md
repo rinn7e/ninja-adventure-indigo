@@ -24,8 +24,31 @@ port. Godot paths are relative to the Godot project; Scala paths to `ninja/src/n
 | `system/ui/player_ui.tscn` (receptacle bar, 4 life per heart) | `HeartBarUI` |
 | `TileMap` in `content/map/map_village.tscn`, `content/map/tileset.tres` | `tools/import_godot.py` → `common/constant/VillageTiles.scala` → `common/util/TileMap`, drawn by `TilemapUI` with `CloneTiles` |
 
-Not ported, because the demo doesn't use them: `Snow` (no zone enables it), the weapon (its
-`use_weapon()` only prints) and character hitboxes (nothing is connected to them).
+Not ported, because the demo doesn't use them: `Snow` (no zone enables it), the V4 weapon system
+(its `use_weapon()` only prints) and character hitboxes (nothing is connected to them). Combat
+comes from the Godot 3 version instead (below).
+
+## Combat, from the Godot 3 version
+
+The Godot 4 demo has no attack and no enemies. The older Godot 3 version of the demo (MIT,
+© 2020 Emilio Coppola) does, and its combat is ported on top of the V4 game, with its numbers
+(`common/constant/Combat.scala` names each one and its source):
+
+| Godot 3 | Indigo port |
+| --- | --- |
+| `Player.gd` `action` (Space; A on a gamepad): swing every 0.2s while held, standing still, attack frame (sheet row 4) | `WorldScene.swing`, `movePlayer`, `Input.isAttackHeld`; V3's `AttackD` points at a walk frame (a typo), so all four directions use row 4 |
+| `Weapon.gd` / `Weapon.tscn`: the lance (6x16) stabs out over 0.2s (quart ease out-in), rotated to the facing, in front only when facing down; its hitbox (6x16, 15px out) hits each thing once for 3 damage; `Fx.png` impact over 0.1s | `weaponArea`, `strike`, `impactPoint`; drawn by `ActorsUI` |
+| `Monster.gd` / `Monster.tscn` (Bamboo): 6 life and a mini life bar, flash and grow when hit, shrink away on death; body 10x6 against walls only | `Monster`, `monsterHurtArea`, `ActorsUI` |
+| `RandomMoveBehavior.gd`: every 1s stop, or set off in a random direction at 40 px/s; starts once on screen | `moveMonsters` |
+| `Monster._on_AreaHitBox_body_entered`: 1 damage and a push of 50 px/s when its hurt area (12x20) enters the player | `hurtPlayer`; the push decays by 10% per 60 fps frame (`movePlayer`) |
+| `LifeBar.gd`: hearts drain and refill at 10 life/s | `drainLife`, `Model.lifeShown` |
+| `Player.death`, `Hud.revive`: death frame for 0.5s, fade, full life, back at the start | `revive`, the revive fade in `WorldScene.ui` |
+| `Camera.reset_map`: once the camera reaches a new screen, dead monsters revive and broken props come back | `resetScreen`, `Model.resetPending` |
+| `SndDeath.wav` on a hit, `SndGrass.wav` when a prop breaks | `soundsOf` |
+| `Tuto.gd`: the move / attack banner, gone once the player has done both (checked every 0.5s, slides down over 1s) | `noteTutorial`, `hideTutorial`, `TutorialUI` |
+
+V4 has no dungeon, so V3's three monsters stand in the same triangle in the open meadow
+north-east of the start (`Village.monsterStarts`).
 
 ## The TileMap encoding
 

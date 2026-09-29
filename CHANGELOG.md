@@ -10,6 +10,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/) and adher
 
 ### Added
 
+- **Combat from the Godot 3 version of the demo** (MIT): the lance (hold Space), Bamboo monsters
+  that wander, hurt and knock the player back, with life bars; death and revival; draining
+  hearts; monsters and props resetting when the camera reaches a new screen; hit and break
+  sounds; the controls tutorial.
+- `doc/development.md`: build gotchas and how to check a change.
+
+### Changed
+
+- The README now builds on the template's README instead of repeating it.
+
 ---
 
 ## [0.1.0] - 2026-09-29

@@ -1,22 +1,12 @@
 # Code Conventions for `ninja-adventure-indigo`
 
 This project follows the conventions of
-[indigo-game-starter-template](https://github.com/rinn7e/indigo-game-starter-template): read its
+[indigo-game-starter-template](https://github.com/rinn7e/indigo-game-starter-template): its
 **[code-convention.md](https://github.com/rinn7e/indigo-game-starter-template/blob/master/doc/code-convention.md)**
-for the rules and their reasons. In short:
-
-0. **One file, one module**: `X.scala` defines `object X`; barrels sit next to their folder
-   (`scene/WorldScene.scala` re-exports `scene/worldscene/`, `common/Types.scala` re-exports
-   `common/types/`).
-1. **Anything that is or returns a drawing type ends in `UI`** (`floorUI`, `gradingUI`,
-   `val groundUI`).
-2. **Stateless UI** is an `XxxUI` module: `ui/` when shared, `scene/<name>/subui/` when not.
-3. **Stateful UI** is a TEA module folder (none needed in this game yet).
-4. **TEA child msg interception**, no `OutMsg`: the root delegates to a scene's `update` and reads
-   its updated model.
-5. **Plain curried functions, data last, chained with `pipe`**:
-   `model.pipe(movePlayer(move, dt, now)).pipe(breakProps(now))`.
-6. **A scene's `init(shared, ...)` returns `Outcome[Model]`.**
+(rules 0-6) and its README's guides for
+[Scala / Indigo](https://github.com/rinn7e/indigo-game-starter-template#coming-from-scala--indigo-whats-unusual-here)
+and [Elm / Haskell](https://github.com/rinn7e/indigo-game-starter-template#coming-from-elm--haskell-read-it-like-this)
+developers. This file only lists what this project adds.
 
 ## What this project adds
 
@@ -24,8 +14,8 @@ for the rules and their reasons. In short:
 
 - Port behaviour from the Godot project rather than inventing it, and say where it comes from in
   the doc comment (`Godot's CameraGrid`, `world.tscn's ColorCorrection`). Numbers copied from
-  Godot keep Godot's values (speeds, durations, gradient stops, z-indexes), named in
-  `common/constant/`.
+  Godot keep Godot's values (speeds, durations, gradient stops, z-indexes) and live in
+  `common/constant/` (`Village`, `Combat`, `Gradings`), each with the Godot file it comes from.
 - Data that can be read from the Godot project is imported, not typed in:
   `ninja/tools/import_godot.py` generates `common/constant/VillageTiles.scala` (don't edit it by
   hand) and copies the assets.
@@ -44,6 +34,13 @@ for the rules and their reasons. In short:
 - Layers, back to front (`common/constant/Layers.scala`): `world`, `weather`, `ui`, `screen`
   (fades), `grading` (the colour grading shader, which re-colours everything below it), `fps`,
   `bars` (the letterbox).
+
+### One frame, one pipeline
+
+The world's `update` is a chain of pure `Model => Model` steps (`movePlayer`, `strike`,
+`moveMonsters`, `resetScreen`, ...) piped together; the last step, `soundsOf`, turns what happened
+this frame (a hit, a prop breaking) into `PlaySound` events in the `Outcome`. Steps stay easy to
+test on their own.
 
 ### Time-based effects are pure functions
 

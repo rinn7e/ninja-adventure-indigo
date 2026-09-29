@@ -8,5 +8,6 @@
   through a barrel, run `./mill clean ninja` first.
 - Don't edit `ninja/src/ninja/common/constant/VillageTiles.scala` by hand: change
   `ninja/tools/import_godot.py` and re-run it (it needs the Godot project in
-  `assets/NinjaAdventure Godot V4/`, see the README).
+  `assets/NinjaAdventure Godot V4/` and `assets/NinjaAdventure Godot V3/`, see the README).
+- For anything the template already covers, link to it rather than repeating it.
 - Add user-facing changes to [CHANGELOG.md](../CHANGELOG.md) under `[Unreleased]`.
