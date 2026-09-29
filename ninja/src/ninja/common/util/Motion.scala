@@ -22,6 +22,14 @@ object Motion:
       case 2 => Facing.Left
       case _ => Facing.Up
 
+  /** The unit vector a facing points along. */
+  def directionOf(facing: Facing): Vector2 =
+    facing match
+      case Facing.Down  => Vector2(0, 1)
+      case Facing.Up    => Vector2(0, -1)
+      case Facing.Left  => Vector2(-1, 0)
+      case Facing.Right => Vector2(1, 0)
+
   /** Unit vector from `from` towards `to` (zero if they coincide). */
   def directionTo(to: Vector2)(from: Vector2): Vector2 =
     (to - from).normalise

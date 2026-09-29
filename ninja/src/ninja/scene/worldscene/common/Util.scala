@@ -14,6 +14,10 @@ object Util:
   def playerBody(feet: Vector2): BoundingCircle =
     BoundingCircle(Vertex.fromVector2(feet + playerOffset), playerRadius)
 
+  /** The centre of a character's sprite, 6 pixels above its feet (Godot 3's character origin). */
+  def spriteCentre(feet: Vector2): Vector2 =
+    feet + Vector2(0, -6)
+
   /** The grid cell showing a world position (Godot's `CameraGrid.world_to_grid`). */
   def cellOf(position: Vector2): Point =
     Point(

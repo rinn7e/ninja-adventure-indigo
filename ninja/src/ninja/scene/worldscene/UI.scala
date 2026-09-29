@@ -7,7 +7,9 @@ import ninja.common.constant.{Layers, Layout}
 import ninja.common.util.Screen
 import ninja.scene.worldscene.Type.*
 import ninja.scene.worldscene.common.Util.viewTopLeft
-import ninja.scene.worldscene.subui.ActorsUI.actorsUI
+import ninja.common.constant.Combat
+import ninja.scene.worldscene.subui.ActorsUI.{actorsUI, impactsUI}
+import ninja.scene.worldscene.subui.TutorialUI.tutorialUI
 import ninja.scene.worldscene.subui.TilemapUI.{floorUI, tilesCloneBlanksUI, topUI, wallRowsUI}
 import ninja.scene.worldscene.subui.WeatherUI.{groundWeatherUI, skyWeatherUI}
 import ninja.theme.Palette
@@ -26,6 +28,16 @@ object UI:
         val alpha = if t < 0.1 then 1.0 else 1 - (t - 0.1) / 0.3
         Batch(Quad(Rectangle(Layout.screen), Fill.Color(Palette.ink.withAlpha(alpha))))
 
+      case _ =>
+        Batch.empty
+
+  /** Godot 3's revive fade: black for 0.3s, clear by 0.5s. */
+  private def reviveUI(revivedAt: Option[Seconds], now: Seconds): Batch[SceneNode] =
+    revivedAt.map(at => (now - at).toDouble) match
+      case Some(t) if t >= 0 && t < Combat.fadeOut.toDouble =>
+        val hold  = Combat.fadeHold.toDouble
+        val alpha = if t < hold then 1.0 else 1 - (t - hold) / (Combat.fadeOut.toDouble - hold)
+        Batch(Quad(Rectangle(Layout.screen), Fill.Color(RGBA.Black.withAlpha(alpha))))
       case _ =>
         Batch.empty
 
@@ -59,11 +71,16 @@ object UI:
 
     SceneUpdateFragment(
       Layers.world -> Layer
-        .Content((floorUI(now) :+ groundUI) ++ sortedUI ++ topUI)
+        .Content((floorUI(now) :+ groundUI) ++ sortedUI ++ topUI ++ impactsUI(model, now))
         .withCamera(Screen.centredCamera(shared.viewport)(viewTopLeft(now)(model.camera))),
       Layers.weather -> Layer.Content(skyWeatherUI(model.environment, model.environmentSince, now)),
-      Layers.ui      -> Layer.Content(heartBarUI(model.life, Update.maxLife, Point(3, 3))),
-      Layers.screen  -> Layer.Content(teleportUI(model.teleportedAt, now))
+      Layers.ui -> Layer.Content(
+        heartBarUI(model.lifeShown.toInt, Update.maxLife, Point(3, 3)) ++
+          tutorialUI(model.tutorial, now)
+      ),
+      Layers.screen -> Layer.Content(
+        teleportUI(model.teleportedAt, now) ++ reviveUI(model.revivedAt, now)
+      )
     ).addCloneBlanks(tilesCloneBlanksUI)
       .withAudio(musicUI(model, now)) |+| fadeInUI(model.enteredAt, now) |+|
       gradingUI(model.previousGrading, model.environment.grading, model.environmentSince, now)

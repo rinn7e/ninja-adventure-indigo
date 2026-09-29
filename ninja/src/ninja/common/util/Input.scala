@@ -33,6 +33,10 @@ object Input:
     if length <= deadzone then Vector2.zero
     else raw * (((length - deadzone) / (1 - deadzone)).min(1) / length)
 
+  /** Godot 3's `action`: Space, or the gamepad's Cross (A). */
+  def isAttackHeld(input: InputState): Boolean =
+    input.keyboard.keysAreDown(Key.SPACE) || input.gamepad.buttons.Cross
+
   def isConfirm(event: GlobalEvent): Boolean =
     event match
       case KeyboardEvent.KeyUp(Key.SPACE | Key.ENTER | Key.KEY_Z) => true

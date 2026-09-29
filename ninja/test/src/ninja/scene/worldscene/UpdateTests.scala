@@ -14,7 +14,7 @@ class UpdateTests extends munit.FunSuite {
   val world: Model   = init(shared).unsafeGet
 
   def tick(move: Vector2, at: Seconds)(model: Model): Model =
-    update(shared.copy(now = at), Msg.Tick(move), model).unsafeGet
+    update(shared.copy(now = at), Msg.Tick(move, false), model).unsafeGet
 
   def ticks(n: Int, move: Vector2)(model: Model): Model =
     (1 to n).foldLeft(model)((m, i) => tick(move, start + Seconds(i / 60.0))(m))

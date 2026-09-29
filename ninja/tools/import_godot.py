@@ -2,7 +2,9 @@
 """Imports what the Indigo port needs from the reference Godot project (assets/NinjaAdventure Godot V4).
 
 The Godot project isn't in this repository (it has no licence): download it from
-https://github.com/pixel-boy/NinjaAdventure into assets/NinjaAdventure Godot V4/ first.
+https://github.com/pixel-boy/NinjaAdventure into assets/NinjaAdventure Godot V4/ first. The
+combat assets come from the older Godot 3 version (MIT), expected in
+assets/NinjaAdventure Godot V3/.
 
 Pure Python (standard library only). Run from the repository root:
 
@@ -28,6 +30,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 GODOT = ROOT / "assets" / "NinjaAdventure Godot V4"
+# The older Godot 3 version (MIT, (c) 2020 Emilio Coppola), for the combat that V4 lacks.
+GODOT3 = ROOT / "assets" / "NinjaAdventure Godot V3"
 ASSETS = ROOT / "ninja" / "assets"
 FONTS = ROOT / "ninja" / "fonts"
 OUT_SCALA = ROOT / "ninja" / "src" / "ninja" / "common" / "constant" / "VillageTiles.scala"
@@ -60,6 +64,17 @@ ASSET_FILES = {
     "audio/music/theme_dream.ogg": "music_dream.ogg",
     "audio/music/theme_swamp.ogg": "music_swamp.ogg",
 }
+# Godot 3 file (relative to that project) -> name in ninja/assets.
+ASSET_FILES_V3 = {
+    "World/Actor/Monster/Bamboo.png": "monster_bamboo.png",
+    "Hud/LifeBarMiniUnder.png": "life_bar_mini_under.png",
+    "Hud/LifeBarMiniProgress.png": "life_bar_mini_progress.png",
+    "World/Actor/Weapon/Sprite/Lance.png": "weapon_lance.png",
+    "World/Actor/Weapon/Fx.png": "fx_impact.png",
+    "Hud/Tuto.png": "tutorial.png",
+    "World/Actor/Monster/SndDeath.wav": "snd_hit.wav",
+    "World/Ld/DestroyableItem/SndGrass.wav": "snd_grass.wav",
+}
 FONT_FILES = {"theme/font_normal.ttf": "font_normal.ttf"}
 
 LAYER_NAMES = {0: "wall", 1: "wall2", 2: "floorDetail", 3: "floor"}
@@ -70,9 +85,11 @@ def copy_assets():
     FONTS.mkdir(parents=True, exist_ok=True)
     for src, name in ASSET_FILES.items():
         shutil.copyfile(GODOT / src, ASSETS / name)
+    for src, name in ASSET_FILES_V3.items():
+        shutil.copyfile(GODOT3 / src, ASSETS / name)
     for src, name in FONT_FILES.items():
         shutil.copyfile(GODOT / src, FONTS / name)
-    print(f"copied {len(ASSET_FILES)} assets and {len(FONT_FILES)} font(s)")
+    print(f"copied {len(ASSET_FILES) + len(ASSET_FILES_V3)} assets and {len(FONT_FILES)} font(s)")
 
 
 def decode_cell(value):

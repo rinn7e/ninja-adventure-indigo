@@ -24,6 +24,27 @@ object Type:
       animSince: Seconds
   ) derives CanEqual
 
+  /** A wandering monster (Godot 3's `Monster` with `RandomMoveBehavior`). It starts wandering once
+    * it's first on screen (`awake`), and `turnAt` is when it next stops or picks a direction.
+    * `touching` is whether its hurt area overlaps the player (it hurts on entering). Once dead it
+    * shrinks away, then stays gone until the screen resets.
+    */
+  final case class Monster(
+      start: Vector2,
+      position: Vector2,
+      velocity: Vector2,
+      life: Int,
+      awake: Boolean,
+      turnAt: Seconds,
+      touching: Boolean,
+      hitAt: Option[Seconds],
+      diedAt: Option[Seconds]
+  ) derives CanEqual
+
+  /** The tutorial banner (Godot 3's `Tuto`): hidden once the player has moved and attacked. */
+  final case class Tutorial(moved: Boolean, attacked: Boolean, hidingAt: Option[Seconds])
+      derives CanEqual
+
   /** The screen-by-screen camera (Godot's `CameraGrid`): the grid cell it shows, sliding there from
     * `from` since `since`.
     */
@@ -49,9 +70,26 @@ object Type:
       previousMusic: Option[Music],
       musicSince: Seconds,
       life: Int,
+      // --- Combat (from the Godot 3 version) ---
+      monsters: Batch[Monster],
+      // When the current lance swing started, and the monsters it has already hit.
+      swingAt: Option[Seconds],
+      swingHits: Set[Int],
+      // Where hits landed, for the impact effect.
+      impacts: Batch[(Vector2, Seconds)],
+      // Knockback velocity, decaying.
+      push: Vector2,
+      hurtAt: Option[Seconds],
+      diedAt: Option[Seconds],
+      revivedAt: Option[Seconds],
+      // The life the hearts show, draining towards `life`.
+      lifeShown: Double,
+      // Set when the camera moves to another screen: once it arrives, monsters and props reset.
+      resetPending: Boolean,
+      tutorial: Tutorial,
       enteredAt: Seconds
   ) derives CanEqual
 
   enum Msg derives CanEqual:
-    /** Every frame, with the direction the player is pushing. */
-    case Tick(move: Vector2)
+    /** Every frame, with the direction the player is pushing and whether attack is held. */
+    case Tick(move: Vector2, attack: Boolean)

@@ -64,6 +64,12 @@ object Village:
   val patrolWait: Seconds     = Seconds(3)
   val patrolPrecision: Double = 5
 
+  /** Three Bamboo monsters (from the Godot 3 version, whose dungeon V4 doesn't have), in the same
+    * triangle, in the open meadow north-east of the start.
+    */
+  val monsterStarts: Batch[Vector2] =
+    Batch(Vector2(312, -164), Vector2(344, -196), Vector2(376, -164))
+
   /** Two linked teleporters. The first's collision shape is 7 pixels below it. */
   val teleporters: Batch[Teleporter] =
     Batch(
