@@ -2,7 +2,7 @@ package ninja.scene.worldscene
 
 import indigo.*
 import ninja.common.Types.*
-import ninja.common.constant.{Combat, Layout, Village}
+import ninja.common.constant.{Combat, Layout, Terrain, Village}
 import ninja.generated.Assets
 import ninja.common.util.Collision
 import ninja.common.util.Motion.*
@@ -160,7 +160,7 @@ object Update:
           dt,
           playerRadius,
           playerOffset,
-          Village.solids,
+          Terrain.solidsNear(walked.position),
           props
         )(
           walked.position
@@ -346,7 +346,7 @@ object Update:
             dt,
             Combat.monsterRadius,
             Vector2.zero,
-            Village.solids,
+            Terrain.solidsNear(m.position),
             Batch.empty
           )(m.position)
         m.copy(position = position, velocity = velocity, awake = awake, turnAt = turnAt)

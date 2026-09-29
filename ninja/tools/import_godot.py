@@ -28,6 +28,8 @@ import re
 import shutil
 from pathlib import Path
 
+import godot3
+
 ROOT = Path(__file__).resolve().parents[2]
 GODOT = ROOT / "assets" / "NinjaAdventure Godot V4"
 # The older Godot 3 version (MIT, (c) 2020 Emilio Coppola), for the combat that V4 lacks.
@@ -35,6 +37,31 @@ GODOT3 = ROOT / "assets" / "NinjaAdventure Godot V3"
 ASSETS = ROOT / "ninja" / "assets"
 FONTS = ROOT / "ninja" / "fonts"
 OUT_SCALA = ROOT / "ninja" / "src" / "ninja" / "common" / "constant" / "VillageTiles.scala"
+OUT_NORTH = ROOT / "ninja" / "src" / "ninja" / "common" / "constant" / "NorthVillageTiles.scala"
+
+# --- The Godot 3 world, joined north of the V4 village -------------------------------------------
+#
+# Its three places, with their offsets inside the Godot 3 world (World.tscn).
+NORTH_SCENES = [
+    ("World/Maps/Village.tscn", ".", (0, 0)),
+    ("World/Maps/Interior.tscn", ".", (342, -555)),  # Godot: (342.228, -555.006)
+    ("World/World.tscn", "YSort/Dungeon", (380, -960)),
+]
+# Where the Godot 3 world goes in ours: north of the V4 village, lined up with the camera grid
+# (a Godot 3 screen, 320x176 from (0, 0), lands exactly on one of ours: our screens start at
+# (-136, -72) modulo (320, 176)). Its southern tree line then runs along the V4 village's open
+# north edge, and its lake lies east of the V4 village.
+NORTH_OFFSET = (-456, -1128)
+# The Godot 3 village's path runs south up to its tree line (y 848-879) at x 704-767; below the
+# tree line is an unfinished strip leading off the map, like the V4 village's open north edge.
+# Opening the tree line there joins the two villages.
+PASSAGE = (704, 768)
+TREE_LINE = (848, 880)  # rows 848 and 864
+# The V4 house interior sits north of the V4 village, where the Godot 3 village now is: it moves
+# two screens east (its teleporter and zone move with it, in Village.scala).
+V4_INTERIOR_TOP = -20  # V4 rows at or above this are the interior
+V4_INTERIOR_SHIFT = 40  # tiles
+
 
 # Godot file (relative to the Godot project) -> name in ninja/assets.
 ASSET_FILES = {
@@ -113,6 +140,8 @@ def read_map():
             if source == 5:  # scene collection: destroyable props, the alternative is the scene id
                 props.append((x, y, alternative))
             else:
+                if y <= V4_INTERIOR_TOP:
+                    x += V4_INTERIOR_SHIFT
                 tiles.append((x, y, source, atlas_x, atlas_y))
         layers[int(m.group(1))] = sorted(tiles, key=lambda t: (t[1], t[0]))
     origin = re.search(r'\[node name="Tilemap" parent="\." index="1"\]\nposition = Vector2\(([-\d.]+), ([-\d.]+)\)', text)
@@ -214,11 +243,150 @@ def write_scala(layers, props, origin, textures, info):
     print(f"wrote {OUT_SCALA.relative_to(ROOT)}: tiles {counts}, {len(tile_rows)} tile kinds, {len(props)} props")
 
 
+def north_village(v4_layers, v4_origin):
+    """The Godot 3 world's tiles, moved north of the V4 village and joined to it, plus walls along
+    every edge of the combined floor that opens onto nothing."""
+    tiles = godot3.sprites(GODOT3, NORTH_SCENES)
+
+    def is_floor(t):
+        return t["sort"] is None and t["z"] <= 0
+
+    def in_passage(t):
+        x, y = t["dest"]
+        w, h = t["src"][2], t["src"][3]
+        return x < PASSAGE[1] and x + w > PASSAGE[0] and y < TREE_LINE[1] and y + h > TREE_LINE[0]
+
+    # Open the tree line: remove its trees in the passage and lay the path's floor through it.
+    removed = [t for t in tiles if not is_floor(t) and in_passage(t)]
+    tiles = [t for t in tiles if t not in removed]
+    # Lay floor wherever a removed tree stood on none, copying the nearest floor tile above it.
+    floors = {t["dest"]: t for t in tiles if is_floor(t) and t["src"][2:] == (16, 16)}
+    for r in removed:
+        x0, y0 = r["dest"]
+        for x in range(x0 - x0 % 16, x0 + r["src"][2], 16):
+            for y in range(y0 - y0 % 16, max(y0 + r["src"][3], TREE_LINE[1] + 16), 16):
+                if (x, y) in floors:
+                    continue
+                source = next((floors[(x, yy)] for yy in range(y - 16, y - 16 * 12, -16) if (x, yy) in floors), None)
+                if source:
+                    floors[(x, y)] = dict(source, dest=(x, y), polys=[])
+                    tiles.append(floors[(x, y)])
+
+    ox, oy = NORTH_OFFSET
+    moved = []
+    for t in tiles:
+        x, y = t["dest"]
+        moved.append(
+            dict(
+                t,
+                dest=(x + ox, y + oy),
+                sort=None if t["sort"] is None else t["sort"] + oy,
+                polys=[[(px + ox, py + oy) for px, py in poly] for poly in t["polys"]],
+            )
+        )
+
+    # Walls along the void: on the V4 village's 16px grid, every empty cell next to floor.
+    vx, vy = v4_origin
+
+    def cell_of(x, y):
+        return ((x - vx) // 16, (y - vy) // 16)
+
+    covered = {(c[0], c[1]) for cells in v4_layers.values() for c in cells}
+    for t in moved:
+        if is_floor(t):
+            x, y = t["dest"]
+            for px in range(x, x + t["src"][2], 8):
+                for py in range(y, y + t["src"][3], 8):
+                    covered.add(cell_of(px + 4, py + 4))
+    edges = set()
+    for cx, cy in covered:
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                n = (cx + dx, cy + dy)
+                if n not in covered:
+                    edges.add(n)
+    walls = [
+        [(vx + cx * 16, vy + cy * 16), (vx + cx * 16 + 16, vy + cy * 16), (vx + cx * 16 + 16, vy + cy * 16 + 16), (vx + cx * 16, vy + cy * 16 + 16)]
+        for cx, cy in sorted(edges)
+    ]
+    return moved, walls, len(removed)
+
+
+def write_north(tiles, walls, removed):
+    textures = sorted({t["texture"] for t in tiles})
+    source = {tex: i for i, tex in enumerate(textures)}
+
+    def asset(tex):
+        return "v3_" + re.sub(r"(?<!^)(?=[A-Z])", "_", Path(tex).stem).lower() + ".png"
+
+    for tex in textures:
+        shutil.copyfile(GODOT3 / tex, ASSETS / asset(tex))
+
+    def layer(t):
+        if t["sort"] is not None:
+            return 1
+        return 2 if t["z"] > 0 else 0
+
+    rows = [
+        (source[t["texture"]], *t["src"], *t["dest"], t["flags"], layer(t), t["sort"] if t["sort"] is not None else 0)
+        for t in tiles
+    ]
+    polys = [p for t in tiles for p in t["polys"]] + walls
+
+    def chunked(rows):
+        """A string literal can't exceed 64 KB (Scala.js), so rows are joined at run time."""
+        chunks, current = [], []
+        for row in rows:
+            current.append(row)
+            if sum(len(r) + 1 for r in current) > 20000:
+                chunks.append(";".join(current))
+                current = []
+        if current:
+            chunks.append(";".join(current))
+        return "List(\n" + ",\n".join(f'      "{c}"' for c in chunks) + '\n    ).mkString(";")'
+
+    lines = [
+        "package ninja.common.constant",
+        "",
+        "import indigo.*",
+        "",
+        "// DO NOT EDIT: generated by ninja/tools/import_godot.py from the Godot 3 version of the demo",
+        "// (MIT, (c) 2020 Emilio Coppola): World/Maps/Village.tscn, World/Maps/Interior.tscn and",
+        "// World/World.tscn's dungeon, moved north of the V4 village and joined to it.",
+        "",
+        "/** The Godot 3 world's raw data, decoded by `ninja.common.util.TileMap`. Rows are `;`-separated,",
+        "  * fields `,`-separated. World coordinates.",
+        "  */",
+        "object NorthVillageTiles:",
+        "",
+        "  /** Tileset textures by source id. */",
+        "  val sources: Map[Int, AssetName] =",
+        "    Map(",
+        ",\n".join(f'      {i} -> AssetName("{asset(tex)}")' for tex, i in source.items()),
+        "    )",
+        "",
+        "  /** Tiles, in Godot's drawing order: source, srcX, srcY, width, height, x, y, flags (1 flip h,",
+        "    * 2 flip v), layer (0 under the characters, 1 y-sorted with them, 2 over them), sort y.",
+        "    */",
+        "  val tiles: String =",
+        "    " + chunked([",".join(str(v) for v in r) for r in rows]),
+        "",
+        "  /** Collision polygons (x, y pairs): the tiles' shapes, then walls along the void. */",
+        "  val solids: String =",
+        "    " + chunked([",".join(fmt(v) for pt in p for v in pt) for p in polys]),
+        "",
+    ]
+    OUT_NORTH.write_text("\n".join(lines))
+    print(f"wrote {OUT_NORTH.relative_to(ROOT)}: {len(rows)} tiles from {len(textures)} textures, {len(polys)} polygons ({len(walls)} void walls), {removed} tree tiles opened")
+
+
 def main():
     copy_assets()
     layers, props, origin = read_map()
     textures, info = read_tileset()
     write_scala(layers, props, origin, textures, info)
+    tiles, walls, removed = north_village(layers, origin)
+    write_north(tiles, walls, removed)
 
 
 if __name__ == "__main__":

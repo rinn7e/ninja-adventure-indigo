@@ -22,6 +22,20 @@ object Tiles:
   object TileKind:
     val plain: TileKind = TileKind(None, 0, 0, 1)
 
+  /** A Godot 3 tile, already placed (Godot 3 tiles can be bigger than a cell, and flipped): `crop`
+    * in its texture, `position` of its top-left in the world, and its drawing `layer` (0 under the
+    * characters, 1 y-sorted with them by `sortY`, 2 over them).
+    */
+  final case class PlacedTile(
+      source: Int,
+      crop: Rectangle,
+      position: Point,
+      flipH: Boolean,
+      flipV: Boolean,
+      layer: Int,
+      sortY: Int
+  ) derives CanEqual
+
   /** The four Godot layers: walls (y-sorted with characters), floor detail and floor. */
   final case class TileLayers(
       wall: Batch[TileCell],

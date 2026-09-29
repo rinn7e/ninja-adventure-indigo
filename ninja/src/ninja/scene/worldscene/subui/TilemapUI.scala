@@ -3,7 +3,7 @@ package ninja.scene.worldscene.subui
 import indigo.*
 import ninja.common.Types.*
 import ninja.common.constant.Layout.tileSize
-import ninja.common.constant.{Village, VillageTiles}
+import ninja.common.constant.{NorthVillage, NorthVillageTiles, Village, VillageTiles}
 import ninja.common.util.TileMap.*
 
 /** The village tiles, drawn with `CloneTiles` (hardware instancing): one clone blank per tileset
@@ -18,11 +18,69 @@ object TilemapUI:
 
   private def cloneId(source: Int): CloneId = CloneId(s"tiles-$source")
 
+  // --- The Godot 3 world (NorthVillage) -------------------------------------------------------
+
+  /** Godot 3 tiles come in several sizes: one clone blank per texture and size. */
+  private def northCloneId(source: Int, size: Size): CloneId =
+    CloneId(s"north-$source-${size.width}x${size.height}")
+
+  private val northSizes: Batch[(Int, Size)] =
+    Batch.fromList(NorthVillage.tiles.map(t => (t.source, t.crop.size)).toList.distinct)
+
+  /** A flipped tile is mirrored around its top-left corner, so it starts one size further on. */
+  private def placedData(tile: PlacedTile): CloneTileData =
+    CloneTileData(
+      tile.position.x + (if tile.flipH then tile.crop.width else 0),
+      tile.position.y + (if tile.flipV then tile.crop.height else 0),
+      Radians.zero,
+      if tile.flipH then -1.0 else 1.0,
+      if tile.flipV then -1.0 else 1.0,
+      tile.crop.x,
+      tile.crop.y,
+      tile.crop.width,
+      tile.crop.height
+    )
+
+  /** Static batches, one per texture and size, in order of first appearance (so later Godot layers,
+    * such as floor details, draw over earlier ones).
+    */
+  private def placedUI(tiles: Batch[PlacedTile], key: String): Batch[SceneNode] =
+    val groups = tiles.toList.zipWithIndex.groupBy { case (t, _) => (t.source, t.crop.size) }
+    Batch.fromList(groups.toList.sortBy(_._2.map(_._2).min).map { case ((source, size), group) =>
+      CloneTiles(northCloneId(source, size), Batch.fromList(group.map(g => placedData(g._1))))
+        .withStaticBatchKey(BindingKey(s"$key-$source-${size.width}x${size.height}")): SceneNode
+    })
+
+  /** The Godot 3 world's floor, water and wall layers, under the characters. */
+  val northFloorUI: Batch[SceneNode] =
+    placedUI(NorthVillage.tiles.filter(_.layer == 0), "north-floor")
+
+  /** Its y-sorted tiles (trees, houses, fences), as (sort y, node): one static batch per row. */
+  val northRowsUI: Batch[(Double, SceneNode)] =
+    Batch.fromList(
+      NorthVillage.tiles
+        .filter(_.layer == 1)
+        .groupBy(_.sortY)
+        .toList
+        .flatMap { case (sortY, row) =>
+          placedUI(row, s"north-row-$sortY").toList.map(node => (sortY.toDouble, node))
+        }
+    )
+
+  /** Its tiles drawn over everything. */
+  val northTopUI: Batch[SceneNode] =
+    placedUI(NorthVillage.tiles.filter(_.layer == 2), "north-top")
+
   /** Must be added to the scene (`addCloneBlanks`) for the tiles to draw. */
   val tilesCloneBlanksUI: Batch[CloneBlank] =
     Batch.fromList(VillageTiles.sources.toList.map { case (source, asset) =>
       CloneBlank(cloneId(source), Graphic(tileSize, tileSize, Material.Bitmap(asset)))
-    })
+    }) ++ northSizes.map { case (source, size) =>
+      CloneBlank(
+        northCloneId(source, size),
+        Graphic(size.width, size.height, Material.Bitmap(NorthVillageTiles.sources(source)))
+      )
+    }
 
   private def kind(cell: TileCell): TileKind =
     kindOf(cell)(Village.tiles)

@@ -43,6 +43,32 @@ object TileMap:
       origin.y + cell.y * tileSize + tileSize / 2
     )
 
+  /** Godot 3 tiles: source, srcX, srcY, width, height, x, y, flags, layer, sort y. */
+  def decodePlacedTiles(data: String): Batch[PlacedTile] =
+    rows(data).map(r =>
+      PlacedTile(
+        source = r(0),
+        crop = Rectangle(r(1), r(2), r(3), r(4)),
+        position = Point(r(5), r(6)),
+        flipH = (r(7) & 1) != 0,
+        flipV = (r(7) & 2) != 0,
+        layer = r(8),
+        sortY = r(9)
+      )
+    )
+
+  /** Polygons as rows of x, y pairs, in world coordinates. */
+  def decodePolygons(data: String): Batch[Polygon.Closed] =
+    Batch
+      .fromArray(data.split(";"))
+      .map { row =>
+        Polygon.Closed(
+          Batch.fromList(
+            row.split(",").map(_.toDouble).toList.grouped(2).map(p => Vertex(p(0), p(1))).toList
+          )
+        )
+      }
+
   /** Every tile's collision polygon in world coordinates, from all layers. */
   def solids(origin: Point)(layers: TileLayers): Batch[Polygon.Closed] =
     (layers.floor ++ layers.floorDetail ++ layers.wall ++ layers.wall2).flatMap { cell =>

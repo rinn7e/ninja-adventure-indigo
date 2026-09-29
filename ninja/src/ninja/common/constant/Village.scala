@@ -70,11 +70,21 @@ object Village:
   val monsterStarts: Batch[Vector2] =
     Batch(Vector2(312, -164), Vector2(344, -196), Vector2(376, -164))
 
+  /** The house interior sits north of the village in the Godot map, where the Godot 3 world now is
+    * (`NorthVillage`), so the importer moves it two screens east; its teleporter and zone move too.
+    */
+  private val interiorShift: Int = 640
+
   /** Two linked teleporters. The first's collision shape is 7 pixels below it. */
   val teleporters: Batch[Teleporter] =
     Batch(
       Teleporter(Vector2(16, -176), Rectangle(16 - 10, -176 + 7 - 5, 20, 10), Vector2(0, 1), 1),
-      Teleporter(Vector2(640, -624), Rectangle(640 - 10, -624 - 5, 20, 10), Vector2(0, -1), 0)
+      Teleporter(
+        Vector2(640 + interiorShift, -624),
+        Rectangle(640 + interiorShift - 10, -624 - 5, 20, 10),
+        Vector2(0, -1),
+        0
+      )
     )
 
   private def centred(x: Int, y: Int, width: Int, height: Int): Rectangle =
@@ -101,5 +111,8 @@ object Village:
         centred(24, -152, 304, 160),
         Environment(Some(Music.Dream), Set(Meteo.Ray, Meteo.Cloud), Grading.Neutral)
       ),
-      Zone(centred(662, -685, 304, 160), Environment(None, Set(Meteo.Ray), Grading.Neutral))
+      Zone(
+        centred(662 + interiorShift, -685, 304, 160),
+        Environment(None, Set(Meteo.Ray), Grading.Neutral)
+      )
     )

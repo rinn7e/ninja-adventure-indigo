@@ -10,7 +10,15 @@ import ninja.scene.worldscene.common.Util.viewTopLeft
 import ninja.common.constant.Combat
 import ninja.scene.worldscene.subui.ActorsUI.{actorsUI, impactsUI}
 import ninja.scene.worldscene.subui.TutorialUI.tutorialUI
-import ninja.scene.worldscene.subui.TilemapUI.{floorUI, tilesCloneBlanksUI, topUI, wallRowsUI}
+import ninja.scene.worldscene.subui.TilemapUI.{
+  floorUI,
+  northFloorUI,
+  northRowsUI,
+  northTopUI,
+  tilesCloneBlanksUI,
+  topUI,
+  wallRowsUI
+}
 import ninja.scene.worldscene.subui.WeatherUI.{groundWeatherUI, skyWeatherUI}
 import ninja.theme.Palette
 import ninja.ui.ColorGradingUI.gradingUI
@@ -60,7 +68,8 @@ object UI:
 
     // Walls and characters, drawn back to front by their feet (Godot's y-sort).
     val sortedUI =
-      (wallRowsUI.map { case (y, node) => (y, Batch(node)) } ++ actorsUI(model, now))
+      ((wallRowsUI ++ northRowsUI)
+        .map { case (y, node) => (y, Batch(node)) } ++ actorsUI(model, now))
         .sortBy(_._1)
         .flatMap(_._2)
 
@@ -71,7 +80,10 @@ object UI:
 
     SceneUpdateFragment(
       Layers.world -> Layer
-        .Content((floorUI(now) :+ groundUI) ++ sortedUI ++ topUI ++ impactsUI(model, now))
+        .Content(
+          (floorUI(now) ++ northFloorUI :+ groundUI) ++ sortedUI ++ topUI ++ northTopUI ++
+            impactsUI(model, now)
+        )
         .withCamera(Screen.centredCamera(shared.viewport)(viewTopLeft(now)(model.camera))),
       Layers.weather -> Layer.Content(skyWeatherUI(model.environment, model.environmentSince, now)),
       Layers.ui -> Layer.Content(
