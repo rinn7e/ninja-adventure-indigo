@@ -31,6 +31,12 @@ function that computes the current value from the clock:
   while it talks is just remembering when it paused and shifting the clock after
   (`VillagerState.shift`).
 
+This is the idiomatic Indigo pattern, and Indigo has ready-made parts for it that this port
+didn't use: `Signal` (`Lerp`, `EaseIn`, `EaseOut`, `EaseInOut`, `Pulse`, time clamping and
+wrapping), `SignalFunction` to compose them, and `Timeline` for multi-step animations. We wrote
+the curves by hand, partly because Godot's specific ones (circular, elastic, quartic out-in) aren't
+among Indigo's built-ins.
+
 There's nothing to start, stop, kill or leak. Godot's camera script has to `tween.kill()` before
 starting a new slide; here a new slide just replaces the timestamp. Two effects can't drift out of
 sync, and any frame can be drawn from the model alone.
@@ -121,6 +127,33 @@ fine at 60 FPS, but only because the 8,000 map tiles are instanced (`CloneTiles`
 batches the renderer caches. Naive "one node per tile" would not have been. Immutability didn't
 cost much here; the drawing strategy mattered far more.
 
+## Whose fault is it: functional style, Indigo, or us?
+
+Not every downside above is the price of functional programming. Sorted honestly:
+
+| Downside | Cause | What Indigo offers |
+| --- | --- | --- |
+| No `move_and_slide` for polygons | **Indigo's gap.** `indigo-physics` is a rigid-body simulation with boxes and circles, and has no character controller | Nothing closer; our own `Collision.scala` is the way |
+| Drawing order (y-sorting) is ours to build | **Indigo's gap**, partly. Layers order the frame, but there's no y-sort | Performers (below) are drawn in `PerformerDepth` order, an integer you'd set from y |
+| Every "on enter" needs remembered state | **Functional style.** A pure update compares this frame with the last one; nothing fires by itself | Events (`GlobalEvent`, subsystems) can carry "it happened" once you detect it, but the detection is still yours |
+| One long pipeline whose order matters | **Our choice.** The template keeps the whole game in one TEA `Model` with one `update`, for testability | `SubSystem`s run their own model and update; `StageManager` performers update themselves |
+| Composition by hand, a 588-line update | **Our choice, and our unfamiliarity.** Indigo 0.30 has an entity system we didn't use: `StageManager` with *performers* (Lead, Extra, Stunt, Narrator) that update and draw themselves, can have physics colliders, and can listen to and emit events: the closest thing to Godot's nodes | `indigoextras.performers` |
+| Hand-written tweens and easing | **Our unfamiliarity**, mostly (see above) | `Signal`, `SignalFunction`, `Timeline` |
+| Hand-cropped sprite-sheet animation | **Our unfamiliarity** | `Clip` and `Sprite` play sheet animations |
+| Short-lived effects (impacts, bursts) managed in the model | **Our choice** | The `Automata` subsystem spawns and retires short-lived effects driven by signals |
+| Frame-rate-dependent code | **Godot's code**, not Indigo: Indigo hands every update a delta time | - |
+| `|+|` keeps a layer's first camera | **Our unfamiliarity** with a merge rule that isn't prominent in the docs | - |
+| Performance | **Neither.** `CloneTiles` is Indigo's documented answer, and it was enough | `CloneTiles`, static batches |
+| 64 KB limit on generated string literals | **Scala.js**, not Indigo or FP | - |
+
+So: two real gaps in Indigo (character physics, y-sorting), one real cost of the functional style
+(state for every "on enter", and an explicit order), and several things that were our choice or
+our unfamiliarity. The biggest of those is structural: the template's "one model, one update"
+TEA shape makes everything testable and visible, but it also means not using Indigo's own
+composition tools (subsystems, performers, automata). A version built on performers would read
+more like the Godot original, with each monster, villager and prop updating and drawing itself,
+at the cost of state living in more than one place.
+
 ## Surprises from reading the Godot code closely
 
 Rewriting everything as explicit data made the originals' quirks impossible to miss:
@@ -148,8 +181,11 @@ Rewriting everything as explicit data made the originals' quirks impossible to m
 particles, routines) is simpler and more robust as a function of the clock. Bugs are easier to
 find because the whole state is one value you can print, and the order of events is written down.
 
-**Bad:** you rebuild what an engine like Godot gives you for free: physics, signals, node
-composition, an editor to see it all. More code, and the order and edge cases are your job.
+**Bad:** you rebuild some of what an engine like Godot gives you for free: character physics and
+y-sorting (Indigo's real gaps), and the "on enter" edges (the functional style's price). Node-like
+composition and tweens exist in Indigo (performers, signals, timelines); this port chose a
+single-model TEA structure over them, which costs code but keeps everything in one testable
+place.
 
 **Cool:** the game becomes data that other tools can read. The same collision data drives the
 game, a path-finder and a scripted player; a frame can be redrawn from any saved model; and a
