@@ -154,6 +154,28 @@ composition tools (subsystems, performers, automata). A version built on perform
 more like the Godot original, with each monster, villager and prop updating and drawing itself,
 at the cost of state living in more than one place.
 
+## If we did it again
+
+What we'd try, keeping what worked (pure logic, the timestamp pattern, tests without the engine):
+
+- **Performers for the cast.** Monsters, villagers and props as `StageManager` performers that
+  update and draw themselves, set their `PerformerDepth` from their y, and report "hit" or
+  "entered" as events: most of the 588-line world update would split into small, self-contained
+  pieces, much like Godot's scenes. The trade-off is state living inside a subsystem instead of
+  the one model the tests can see, so keep the rules themselves (damage, wander, routines) as pure
+  functions the performers call.
+- **`Signal` and `Timeline` for time-based effects**, adding only the curves Indigo lacks
+  (circular, elastic, quartic out-in) as small signal functions.
+- **`Clip` for sprite-sheet animation**, instead of computing crop rectangles by hand.
+- **`Automata` for fire-and-forget effects** (impacts, bursts, smoke puffs), so the model only
+  holds what the game logic needs to know.
+- **Keep our own collision.** Indigo has nothing closer to `move_and_slide` for polygons, and the
+  spatial index made it cheap enough.
+
+The lesson for the template: "one model, one update" is the right place to start (everything is
+visible and testable), but a game this size is where Indigo's own composition tools start to pay
+for themselves.
+
 ## Surprises from reading the Godot code closely
 
 Rewriting everything as explicit data made the originals' quirks impossible to miss:
