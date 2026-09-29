@@ -11,4 +11,5 @@ object Subscription:
     */
   def subscriptions(model: Model, input: InputState): GlobalEvent => Option[Msg] =
     case FrameTick => Some(Msg.Tick(Input.moveVector(input), Input.isAttackHeld(input)))
-    case _         => None
+    case KeyboardEvent.KeyUp(Key.F3) => Some(Msg.ToggleDebug)
+    case _                           => None

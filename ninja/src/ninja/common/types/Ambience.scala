@@ -7,11 +7,13 @@ import indigo.*
   */
 object Ambience:
 
+  /** Godot 4's weather, plus the sparks of the Godot 3 version. */
   enum Meteo derives CanEqual:
-    case Rain, Snow, Fog, Cloud, Leaf, Ray
+    case Rain, Snow, Fog, Cloud, Leaf, Ray, Spark
 
+  /** Godot 4's two tracks, and the Godot 3 version's four. */
   enum Music derives CanEqual:
-    case Dream, Swamp
+    case Dream, Swamp, Road, Aquatic, Mystical, Melancholia
 
   /** The colour grading gradient (Godot's `ColorCorrection`, see `Gradings`): `Initial` is the one
     * set on Godot's world scene, shown until the first zone's grading fades in.

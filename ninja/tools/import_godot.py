@@ -84,6 +84,7 @@ ASSET_FILES = {
     "content/ui/heart.png": "heart.png",
     "system/environment/fx/rain.png": "fx_rain.png",
     "system/environment/fx/rain_on_floor.png": "fx_rain_on_floor.png",
+    "system/environment/fx/snow.png": "fx_snow.png",
     "system/environment/fx/cloud.png": "fx_cloud.png",
     "system/environment/fx/leaf.png": "fx_leaf.png",
     "system/environment/fx/fog.png": "fx_fog.png",
@@ -101,6 +102,12 @@ ASSET_FILES_V3 = {
     "Hud/Tuto.png": "tutorial.png",
     "World/Actor/Monster/SndDeath.wav": "snd_hit.wav",
     "World/Ld/DestroyableItem/SndGrass.wav": "snd_grass.wav",
+    "World/Particle/Spark.png": "fx_spark.png",
+    "World/FX/Smoke/SpriteSheet.png": "fx_smoke.png",
+    "Resource/Music/23 - Road.ogg": "music_road.ogg",
+    "Resource/Music/18 - Aquatic.ogg": "music_aquatic.ogg",
+    "Resource/Music/13 - Mystical.ogg": "music_mystical.ogg",
+    "Resource/Music/16 - Melancholia.ogg": "music_melancholia.ogg",
 }
 FONT_FILES = {"theme/font_normal.ttf": "font_normal.ttf"}
 

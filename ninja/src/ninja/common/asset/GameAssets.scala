@@ -28,5 +28,9 @@ object GameAssets:
 
   def musicAsset(music: Music): AssetName =
     music match
-      case Music.Dream => Assets.assets.musicDream
-      case Music.Swamp => Assets.assets.musicSwamp
+      case Music.Dream       => Assets.assets.musicDream
+      case Music.Swamp       => Assets.assets.musicSwamp
+      case Music.Road        => Assets.assets.musicRoad
+      case Music.Aquatic     => Assets.assets.musicAquatic
+      case Music.Mystical    => Assets.assets.musicMystical
+      case Music.Melancholia => Assets.assets.musicMelancholia

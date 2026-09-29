@@ -64,12 +64,6 @@ object Village:
   val patrolWait: Seconds     = Seconds(3)
   val patrolPrecision: Double = 5
 
-  /** Three Bamboo monsters (from the Godot 3 version, whose dungeon V4 doesn't have), in the same
-    * triangle, in the open meadow north-east of the start.
-    */
-  val monsterStarts: Batch[Vector2] =
-    Batch(Vector2(312, -164), Vector2(344, -196), Vector2(376, -164))
-
   /** The house interior sits north of the village in the Godot map, where the Godot 3 world now is
     * (`NorthVillage`), so the importer moves it two screens east; its teleporter and zone move too.
     */
@@ -78,12 +72,21 @@ object Village:
   /** Two linked teleporters. The first's collision shape is 7 pixels below it. */
   val teleporters: Batch[Teleporter] =
     Batch(
-      Teleporter(Vector2(16, -176), Rectangle(16 - 10, -176 + 7 - 5, 20, 10), Vector2(0, 1), 1),
+      Teleporter(
+        Vector2(16, -176),
+        Rectangle(16 - 10, -176 + 7 - 5, 20, 10),
+        Vector2(0, 1),
+        1,
+        25,
+        keepsOffset = true
+      ),
       Teleporter(
         Vector2(640 + interiorShift, -624),
         Rectangle(640 + interiorShift - 10, -624 - 5, 20, 10),
         Vector2(0, -1),
-        0
+        0,
+        25,
+        keepsOffset = true
       )
     )
 

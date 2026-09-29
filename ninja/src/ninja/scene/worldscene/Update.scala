@@ -2,7 +2,7 @@ package ninja.scene.worldscene
 
 import indigo.*
 import ninja.common.Types.*
-import ninja.common.constant.{Combat, Layout, Terrain, Village}
+import ninja.common.constant.{Combat, Layout, Village, WorldMap}
 import ninja.generated.Assets
 import ninja.common.util.Collision
 import ninja.common.util.Motion.*
@@ -57,7 +57,7 @@ object Update:
       previousMusic = None,
       musicSince = now,
       life = maxLife,
-      monsters = Village.monsterStarts.map(monsterAt(now)),
+      monsters = WorldMap.monsterStarts.map(monsterAt(now)),
       swingAt = None,
       swingHits = Set.empty,
       impacts = Batch.empty,
@@ -68,6 +68,7 @@ object Update:
       lifeShown = maxLife.toDouble,
       resetPending = false,
       tutorial = Tutorial(moved = false, attacked = false, hidingAt = None),
+      debug = false,
       enteredAt = now
     ).pipe(enterZones(now)).pipe(Outcome(_))
 
@@ -91,6 +92,9 @@ object Update:
 
   def update(shared: Shared, msg: Msg, model: Model): Outcome[Model] =
     msg match
+      case Msg.ToggleDebug =>
+        Outcome(model.copy(debug = !model.debug))
+
       case Msg.Tick(move, attack) =>
         val now = shared.now
         val dt  = shared.delta.toDouble
@@ -160,7 +164,7 @@ object Update:
           dt,
           playerRadius,
           playerOffset,
-          Terrain.solidsNear(walked.position),
+          WorldMap.solidsNear(walked.position),
           props
         )(
           walked.position
@@ -346,7 +350,7 @@ object Update:
             dt,
             Combat.monsterRadius,
             Vector2.zero,
-            Terrain.solidsNear(m.position),
+            WorldMap.solidsNear(m.position),
             Batch.empty
           )(m.position)
         m.copy(position = position, velocity = velocity, awake = awake, turnAt = turnAt)
@@ -451,10 +455,12 @@ object Update:
     val coolingDown = model.teleportedAt.exists(now < _ + teleportCooldown)
     val body        = playerBody(model.player.position)
 
-    Village.teleporters.find(t => Collision.touches(t.area)(body)) match
+    WorldMap.teleporters.find(t => Collision.touches(t.area)(body)) match
       case Some(from) if !coolingDown =>
-        val to       = Village.teleporters(from.target)
-        val position = to.position + (model.player.position - from.position) + to.direction * 25
+        val to = WorldMap.teleporters(from.target)
+        val offset =
+          if from.keepsOffset then model.player.position - from.position else Vector2.zero
+        val position = to.position + offset + to.direction * to.reach
         val cell     = cellOf(position)
         model.copy(
           player = model.player.copy(position = position),
@@ -488,11 +494,11 @@ object Update:
     */
   def enterZones(now: Seconds)(model: Model): Model =
     val body = playerBody(model.player.position)
-    val zone = Village.zones.toList.indexWhere(z => Collision.touches(z.area)(body))
+    val zone = WorldMap.zones.toList.indexWhere(z => Collision.touches(z.area)(body))
 
     if zone < 0 || model.zone.contains(zone) then model
     else
-      val environment = Village.zones(zone).environment
+      val environment = WorldMap.zones(zone).environment
       val changed = model.copy(
         zone = Some(zone),
         environment = environment,

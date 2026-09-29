@@ -49,6 +49,17 @@ object UI:
       case _ =>
         Batch.empty
 
+  /** The debug overlay (F3): the player's world position, top right. */
+  private def debugUI(model: Model): Batch[SceneNode] =
+    if !model.debug then Batch.empty
+    else
+      val p = model.player.position
+      Batch(
+        GameAssets
+          .textUI(s"${p.x.toInt},${p.y.toInt}", Layout.screen.width - 3, 3, RGBA.White)
+          .alignRight
+      )
+
   /** The zone's music: the previous track fades out over a second, then the new one plays. */
   private def musicUI(model: Model, now: Seconds): SceneAudio =
     val t = (now - model.musicSince).toDouble
@@ -88,7 +99,7 @@ object UI:
       Layers.weather -> Layer.Content(skyWeatherUI(model.environment, model.environmentSince, now)),
       Layers.ui -> Layer.Content(
         heartBarUI(model.lifeShown.toInt, Update.maxLife, Point(3, 3)) ++
-          tutorialUI(model.tutorial, now)
+          tutorialUI(model.tutorial, now) ++ debugUI(model)
       ),
       Layers.screen -> Layer.Content(
         teleportUI(model.teleportedAt, now) ++ reviveUI(model.revivedAt, now)

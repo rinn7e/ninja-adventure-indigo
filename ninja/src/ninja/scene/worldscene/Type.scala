@@ -87,9 +87,13 @@ object Type:
       // Set when the camera moves to another screen: once it arrives, monsters and props reset.
       resetPending: Boolean,
       tutorial: Tutorial,
+      debug: Boolean,
       enteredAt: Seconds
   ) derives CanEqual
 
   enum Msg derives CanEqual:
     /** Every frame, with the direction the player is pushing and whether attack is held. */
     case Tick(move: Vector2, attack: Boolean)
+
+    /** F3: show or hide the debug overlay (the player's world position). */
+    case ToggleDebug

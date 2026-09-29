@@ -71,6 +71,35 @@ object WeatherUI:
         .moveTo(at.x.toInt, at.y.toInt)
     })
 
+  /** Snow (Godot 4's unused `Snow` emitter): 20 flakes a second in a 400x280 box, drifting down and
+    * to the left at 5-30 px/s, each a random frame of `snow.png`, fading in and out.
+    */
+  private def snowUI(time: Double, strength: Double): Batch[SceneNode] =
+    val direction = Vector2(-0.5, 1).normalise
+    Batch.fromIndexedSeq((0 until 20).map { i =>
+      val (spawn, life) = particle(i, 20, 1.0, Size(200, 140), time, 5)
+      val at            = spawn + direction * ((5 + 25 * noise(i, 11)) * life)
+      val alpha =
+        if life < 0.128 then life / 0.128 else if life > 0.884 then (1 - life) / 0.116 else 1
+      Graphic(8, 8, Material.ImageEffects(Assets.assets.fxSnow).withAlpha(strength * alpha))
+        .withCrop((noise(i, 13) * 7).toInt * 8, 0, 8, 8)
+        .moveTo(at.x.toInt - 4, at.y.toInt - 4)
+    })
+
+  /** Sparks (the Godot 3 version's `Spark` emitter): 10 motes rising at 5 px/s (±50%) in a 200x200
+    * box, playing `Spark.png`'s 7 frames over their 1s life from a random frame, fading at the end.
+    */
+  private def sparkUI(time: Double, strength: Double): Batch[SceneNode] =
+    Batch.fromIndexedSeq((0 until 10).map { i =>
+      val (spawn, life) = particle(i, 10, 1.0, Size(100, 100), time, 6)
+      val at            = spawn + Vector2(0, -(5 * (0.5 + noise(i, 17))) * life)
+      val alpha         = if life > 2.0 / 3 then (1 - life) * 3 else 1
+      val frame         = ((noise(i, 19) + life) * 7).toInt % 7
+      Graphic(10, 8, Material.ImageEffects(Assets.assets.fxSpark).withAlpha(strength * alpha))
+        .withCrop(frame * 10, 0, 10, 8)
+        .moveTo(at.x.toInt - 5, at.y.toInt - 4)
+    })
+
   /** Leaves: 10 drifting, spinning (6 frames) leaves, living 3 seconds each. */
   private def leafUI(time: Double, strength: Double): Batch[SceneNode] =
     val direction = rainDirection
@@ -139,14 +168,15 @@ object WeatherUI:
     ((now - since).toDouble / fadeIn).min(1.0)
 
   /** The effects Godot draws at z 0 before the map, so on the floor but under walls, trees and
-    * characters, in this order: rain, its splashes, cloud shadows.
+    * characters, in this order: snow, rain, its splashes, cloud shadows.
     */
   def groundWeatherUI(environment: Environment, since: Seconds, now: Seconds): Batch[SceneNode] =
     val time     = now.toDouble
     val strength = strengthOf(since, now)
     val meteo    = environment.meteo
-    (if meteo.contains(Meteo.Rain) then rainUI(time, strength) ++ rainOnFloorUI(time, strength)
-     else Batch.empty) ++
+    (if meteo.contains(Meteo.Snow) then snowUI(time, strength) else Batch.empty) ++
+      (if meteo.contains(Meteo.Rain) then rainUI(time, strength) ++ rainOnFloorUI(time, strength)
+       else Batch.empty) ++
       (if meteo.contains(Meteo.Cloud) then cloudUI(time, strength) else Batch.empty)
 
   /** The effects Godot draws above the map: leaves (z 3), light rays (z 6), fog (z 10). */
@@ -156,4 +186,5 @@ object WeatherUI:
     val meteo    = environment.meteo
     (if meteo.contains(Meteo.Leaf) then leafUI(time, strength) else Batch.empty) ++
       (if meteo.contains(Meteo.Ray) then rayUI(time, strength) else Batch.empty) ++
+      (if meteo.contains(Meteo.Spark) then sparkUI(time, strength) else Batch.empty) ++
       (if meteo.contains(Meteo.Fog) then fogUI(time, strength) else Batch.empty)

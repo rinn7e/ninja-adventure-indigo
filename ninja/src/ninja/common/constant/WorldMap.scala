@@ -1,10 +1,24 @@
 package ninja.common.constant
 
 import indigo.*
+import ninja.common.Types.*
 
-/** Every wall in the world (both villages), indexed by area so collision only checks nearby ones.
+/** The whole world: the V4 village (`Village`) and the Godot 3 world north of it (`NorthVillage`).
+  * Walls are indexed by area, so collision only checks nearby ones.
   */
-object Terrain:
+object WorldMap:
+
+  /** Both villages' teleporters; the Godot 3 ones' targets move past the V4 village's. */
+  val teleporters: Batch[Teleporter] =
+    Village.teleporters ++
+      NorthVillage.teleporters.map(t => t.copy(target = t.target + Village.teleporters.length))
+
+  /** Both villages' zones; the V4 village's come first (the first zone touched wins). */
+  val zones: Batch[Zone] =
+    Village.zones ++ NorthVillage.zones
+
+  val monsterStarts: Batch[Vector2] =
+    NorthVillage.monsterStarts
 
   val solids: Batch[Polygon.Closed] =
     Village.solids ++ NorthVillage.solids
