@@ -38,10 +38,12 @@ object Type:
       camera: CameraGrid,
       // When the player last went through a teleporter: drives the screen transition.
       teleportedAt: Option[Seconds],
-      // The environment zone the player last walked into, and its music and weather.
+      // The environment zone the player last walked into, and its music, weather and grading (which
+      // fades in from `previousGrading` since `environmentSince`).
       zone: Option[Int],
       environment: Environment,
       environmentSince: Seconds,
+      previousGrading: Grading,
       // The music playing, and the one fading out since `musicSince`.
       music: Option[Music],
       previousMusic: Option[Music],

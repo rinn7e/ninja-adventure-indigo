@@ -25,8 +25,8 @@ class UpdateTests extends munit.FunSuite {
 
   test("only the showing scene hears input") {
     val confirm = KeyboardEvent.KeyUp(Key.SPACE)
-    assertEquals(subscriptions(start, Keyboard.default)(confirm), Some(Msg.TitleSceneMsg(TitleScene.Msg.Start)))
+    assertEquals(subscriptions(start, InputState.default)(confirm), Some(Msg.TitleSceneMsg(TitleScene.Msg.Start)))
     val inWorld = update(shared, Msg.TitleSceneMsg(TitleScene.Msg.Start), start).unsafeGet
-    assertEquals(subscriptions(inWorld, Keyboard.default)(FrameTick), Some(Msg.WorldSceneMsg(WorldScene.Msg.Tick(Vector2.zero))))
+    assertEquals(subscriptions(inWorld, InputState.default)(FrameTick), Some(Msg.WorldSceneMsg(WorldScene.Msg.Tick(Vector2.zero))))
   }
 }

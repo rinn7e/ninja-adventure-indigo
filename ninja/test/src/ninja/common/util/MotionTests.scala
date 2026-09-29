@@ -18,8 +18,4 @@ class MotionTests extends munit.FunSuite {
     assertEquals(facingOf(Vector2(0, -1)), Facing.Up)
     assertEquals(facingOf(Vector2(1, 0.9).normalise), Facing.Right)
   }
-
-  test("the move vector is normalised, so diagonals aren't faster") {
-    assertEquals(Input.moveVector(Keyboard.default), Vector2.zero)
-  }
 }

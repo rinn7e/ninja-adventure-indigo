@@ -74,20 +74,26 @@ object Village:
   private def centred(x: Int, y: Int, width: Int, height: Int): Rectangle =
     Rectangle(x - width / 2, y - height / 2, width, height)
 
-  /** Environment zones: music and weather change when the player walks into one. */
+  /** Environment zones: music, weather and grading change when the player walks into one. */
   val zones: Batch[Zone] =
     Batch(
       // swamp
       Zone(
         centred(-296, -64, 304, 336),
-        Environment(Some(Music.Swamp), Set(Meteo.Rain, Meteo.Fog, Meteo.Leaf))
+        Environment(Some(Music.Swamp), Set(Meteo.Rain, Meteo.Fog, Meteo.Leaf), Grading.Swamp)
       ),
       // autumn
-      Zone(centred(24, 368, 304, 160), Environment(None, Set(Meteo.Cloud, Meteo.Leaf))),
-      Zone(centred(24, 17, 304, 160), Environment(Some(Music.Dream), Set(Meteo.Ray, Meteo.Fog))),
+      Zone(
+        centred(24, 368, 304, 160),
+        Environment(None, Set(Meteo.Cloud, Meteo.Leaf), Grading.Neutral)
+      ),
+      Zone(
+        centred(24, 17, 304, 160),
+        Environment(Some(Music.Dream), Set(Meteo.Ray, Meteo.Fog), Grading.Neutral)
+      ),
       Zone(
         centred(24, -152, 304, 160),
-        Environment(Some(Music.Dream), Set(Meteo.Ray, Meteo.Cloud))
+        Environment(Some(Music.Dream), Set(Meteo.Ray, Meteo.Cloud), Grading.Neutral)
       ),
-      Zone(centred(662, -685, 304, 160), Environment(None, Set(Meteo.Ray)))
+      Zone(centred(662, -685, 304, 160), Environment(None, Set(Meteo.Ray), Grading.Neutral))
     )

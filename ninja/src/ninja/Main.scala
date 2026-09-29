@@ -9,6 +9,7 @@ import ninja.Subscription.subscriptions
 import ninja.Type.*
 import ninja.common.Types.{SceneRoute, Shared}
 import ninja.scene.{TitleScene, WorldScene}
+import ninja.ui.ColorGradingUI
 import ninja.generated.{Assets, NormalFont}
 import tyrian.*
 
@@ -65,6 +66,7 @@ object Main extends BasicGameRuntime[Unit]:
         BootResult(ninja.generated.NinjaConfig.config, ())
           .withAssets(GameAssets.assets(flags.getOrElse("baseUrl", "")))
           .withFonts(GameAssets.fontInfo)
+          .withShaders(ColorGradingUI.shader)
           .withSubSystems(
             FPSCounter
               .tint(Layers.fps, NormalFont.fontKey, Assets.assets.generated.NormalFont)
@@ -85,7 +87,7 @@ object Main extends BasicGameRuntime[Unit]:
 
     def updateModel(context: Context, model: Model): GlobalEvent => Outcome[Model] =
       e =>
-        subscriptions(model, context.frame.input.keyboard)(e) match
+        subscriptions(model, context.frame.input)(e) match
           case Some(msg) => Update.update(Shared.fromContext(context), msg, model)
           case None      => Outcome(model)
 
@@ -114,6 +116,7 @@ object Main extends BasicGameRuntime[Unit]:
       Layers.weather -> Layer.Content.empty.withCamera(centred),
       Layers.ui      -> Layer.Content.empty.withCamera(centred),
       Layers.screen  -> Layer.Content.empty.withCamera(centred),
+      Layers.grading -> Layer.Content.empty,
       Layers.fps     -> Layer.Content.empty.withCamera(centred),
       Layers.bars    -> Layer.Content.empty
     ).withMagnification(Magnification(Screen.scaleFor(viewport)))

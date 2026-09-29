@@ -13,8 +13,12 @@ object GameAssets:
     Assets.assets.assetSetRelativeTo(baseUrl) ++
       Assets.assets.generated.assetSetRelativeTo(baseUrl)
 
-  /** The pack's pixel font, rasterised at build time (`embedFont` in build.mill). */
-  val fontInfo: FontInfo = NormalFont.fontInfo
+  /** The pack's pixel font, rasterised at build time (`embedFont` in build.mill). Its space is 1px
+    * wide, which runs words together ("PressStart"), so it's widened to 3px (the sheet's space cell
+    * is blank).
+    */
+  val fontInfo: FontInfo =
+    NormalFont.fontInfo.addChar(FontChar(" ", 81, 12, 3, 12))
 
   private val fontMaterial: Material.ImageEffects =
     Material.ImageEffects(Assets.assets.generated.NormalFont)

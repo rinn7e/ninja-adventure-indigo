@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Imports what the Indigo port needs from the reference Godot project (assets/NinjaAdventure Godot V4).
 
+The Godot project isn't in this repository (it has no licence): download it from
+https://github.com/pixel-boy/NinjaAdventure into assets/NinjaAdventure Godot V4/ first.
+
 Pure Python (standard library only). Run from the repository root:
 
     python3 ninja/tools/import_godot.py
@@ -49,6 +52,7 @@ ASSET_FILES = {
     "content/particle/particle_rock.png": "particle_rock.png",
     "content/ui/heart.png": "heart.png",
     "system/environment/fx/rain.png": "fx_rain.png",
+    "system/environment/fx/rain_on_floor.png": "fx_rain_on_floor.png",
     "system/environment/fx/cloud.png": "fx_cloud.png",
     "system/environment/fx/leaf.png": "fx_leaf.png",
     "system/environment/fx/fog.png": "fx_fog.png",

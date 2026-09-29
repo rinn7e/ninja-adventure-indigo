@@ -3,7 +3,7 @@ package ninja.common.types
 import indigo.*
 
 /** Environment zones (Godot's `EnvironmentArea` / `ResourceEnvironment`): entering one changes the
-  * music and the weather.
+  * music, the weather and the screen's colour grading.
   */
 object Ambience:
 
@@ -13,9 +13,17 @@ object Ambience:
   enum Music derives CanEqual:
     case Dream, Swamp
 
-  final case class Environment(music: Option[Music], meteo: Set[Meteo]) derives CanEqual
+  /** The colour grading gradient (Godot's `ColorCorrection`, see `Gradings`): `Initial` is the one
+    * set on Godot's world scene, shown until the first zone's grading fades in.
+    */
+  enum Grading derives CanEqual:
+    case Initial, Neutral, Swamp
+
+  final case class Environment(music: Option[Music], meteo: Set[Meteo], grading: Grading)
+      derives CanEqual
 
   object Environment:
-    val calm: Environment = Environment(None, Set.empty)
+    /** Before the first zone. */
+    val calm: Environment = Environment(None, Set.empty, Grading.Initial)
 
   final case class Zone(area: Rectangle, environment: Environment) derives CanEqual

@@ -5,9 +5,9 @@ import ninja.common.Types.*
 import ninja.common.constant.Layout
 import ninja.generated.Assets
 
-/** The zone's weather (Godot: particle emitters attached to the camera, and a fog overlay), drawn
-  * in screen space. Each effect is a pure function of the time, and fades in over 2 seconds after
-  * the player walks into a zone that has it.
+/** The zone's weather (Godot: particle emitters attached to the camera, and a fog overlay), laid
+  * out in screen space. Each effect is a pure function of the time, and fades in over 2 seconds
+  * after the player walks into a zone that has it.
   */
 object WeatherUI:
 
@@ -40,19 +40,40 @@ object WeatherUI:
   private def fade(life: Double, in: Double, out: Double): Double =
     if life < in then life / in else if life > out then (1 - life) / (1 - out) else 1.0
 
-  /** Rain: 30 streaks at 100 px/s, down and to the left. */
+  private val rainDirection: Vector2 = Vector2(-0.5, 1).normalise
+
+  /** Where the i-th raindrop is at `time`: 30 streaks at 100 px/s, down and to the left. */
+  private def raindrop(i: Int, time: Double): Vector2 =
+    val (spawn, life) = particle(i, 30, 1.0, Size(200, 140), time, 1)
+    spawn + rainDirection * (100 * life)
+
   private def rainUI(time: Double, strength: Double): Batch[SceneNode] =
-    val direction = Vector2(-0.5, 1).normalise
     Batch.fromIndexedSeq((0 until 30).map { i =>
-      val (spawn, life) = particle(i, 30, 1.0, Size(200, 140), time, 1)
-      val at            = spawn + direction * (100 * life)
+      val at = raindrop(i, time)
       Graphic(2, 4, Material.ImageEffects(Assets.assets.fxRain).withAlpha(strength))
+        .moveTo(at.x.toInt, at.y.toInt)
+    })
+
+  /** Rain on the floor (Godot's `RainOnFloor` sub-emitter): drops leave splashes where they are,
+    * each playing its 3 frames over 0.5s. Godot emits 4 a second per drop but keeps at most 30
+    * alive, so about one per drop at a time: here, one every 0.5s.
+    */
+  private def rainOnFloorUI(time: Double, strength: Double): Batch[SceneNode] =
+    val splashLife = 0.5
+    Batch.fromIndexedSeq((0 until 30).map { i =>
+      // Each drop's splashes are staggered like the drops themselves.
+      val offset  = i.toDouble / 30
+      val emitted = Math.floor((time + offset) / splashLife) * splashLife - offset
+      val age     = (time - emitted) / splashLife
+      val at      = raindrop(i, emitted) + Vector2(1, 2) - Vector2(4, 4)
+      Graphic(8, 8, Material.ImageEffects(Assets.assets.fxRainOnFloor).withAlpha(strength))
+        .withCrop((age * 3).toInt.min(2) * 8, 0, 8, 8)
         .moveTo(at.x.toInt, at.y.toInt)
     })
 
   /** Leaves: 10 drifting, spinning (6 frames) leaves, living 3 seconds each. */
   private def leafUI(time: Double, strength: Double): Batch[SceneNode] =
-    val direction = Vector2(-0.5, 1).normalise
+    val direction = rainDirection
     Batch.fromIndexedSeq((0 until 10).map { i =>
       val (spawn, life) = particle(i, 10, 3.0, Size(200, 140), time, 2)
       val at            = spawn + direction * (30 * noise(i, 7) * 3 * life)
@@ -114,12 +135,25 @@ object WeatherUI:
         .moveTo(x * size.width + scroll.x, y * size.height + scroll.y)
     )
 
-  def weatherUI(environment: Environment, since: Seconds, now: Seconds): Batch[SceneNode] =
+  private def strengthOf(since: Seconds, now: Seconds): Double =
+    ((now - since).toDouble / fadeIn).min(1.0)
+
+  /** The effects Godot draws at z 0 before the map, so on the floor but under walls, trees and
+    * characters, in this order: rain, its splashes, cloud shadows.
+    */
+  def groundWeatherUI(environment: Environment, since: Seconds, now: Seconds): Batch[SceneNode] =
     val time     = now.toDouble
-    val strength = ((now - since).toDouble / fadeIn).min(1.0)
+    val strength = strengthOf(since, now)
     val meteo    = environment.meteo
-    (if meteo.contains(Meteo.Cloud) then cloudUI(time, strength) else Batch.empty) ++
-      (if meteo.contains(Meteo.Fog) then fogUI(time, strength) else Batch.empty) ++
-      (if meteo.contains(Meteo.Rain) then rainUI(time, strength) else Batch.empty) ++
-      (if meteo.contains(Meteo.Leaf) then leafUI(time, strength) else Batch.empty) ++
-      (if meteo.contains(Meteo.Ray) then rayUI(time, strength) else Batch.empty)
+    (if meteo.contains(Meteo.Rain) then rainUI(time, strength) ++ rainOnFloorUI(time, strength)
+     else Batch.empty) ++
+      (if meteo.contains(Meteo.Cloud) then cloudUI(time, strength) else Batch.empty)
+
+  /** The effects Godot draws above the map: leaves (z 3), light rays (z 6), fog (z 10). */
+  def skyWeatherUI(environment: Environment, since: Seconds, now: Seconds): Batch[SceneNode] =
+    val time     = now.toDouble
+    val strength = strengthOf(since, now)
+    val meteo    = environment.meteo
+    (if meteo.contains(Meteo.Leaf) then leafUI(time, strength) else Batch.empty) ++
+      (if meteo.contains(Meteo.Ray) then rayUI(time, strength) else Batch.empty) ++
+      (if meteo.contains(Meteo.Fog) then fogUI(time, strength) else Batch.empty)

@@ -9,8 +9,9 @@ import ninja.scene.worldscene.Type.*
 import ninja.scene.worldscene.common.Util.viewTopLeft
 import ninja.scene.worldscene.subui.ActorsUI.actorsUI
 import ninja.scene.worldscene.subui.TilemapUI.{floorUI, tilesCloneBlanksUI, topUI, wallRowsUI}
-import ninja.scene.worldscene.subui.WeatherUI.weatherUI
+import ninja.scene.worldscene.subui.WeatherUI.{groundWeatherUI, skyWeatherUI}
 import ninja.theme.Palette
+import ninja.ui.ColorGradingUI.gradingUI
 import ninja.ui.FadeInUI.fadeInUI
 import ninja.ui.HeartBarUI.heartBarUI
 
@@ -51,14 +52,18 @@ object UI:
         .sortBy(_._1)
         .flatMap(_._2)
 
+    // Rain and cloud shadows sit on the floor, moving with the camera (they're in screen space).
+    val groundUI =
+      Group(groundWeatherUI(model.environment, model.environmentSince, now))
+        .moveTo(viewTopLeft(now)(model.camera))
+
     SceneUpdateFragment(
       Layers.world -> Layer
-        .Content(floorUI(now) ++ sortedUI ++ topUI)
-        .withCamera(
-          Camera.Fixed(viewTopLeft(now)(model.camera) - Screen.offsetFor(shared.viewport))
-        ),
-      Layers.weather -> Layer.Content(weatherUI(model.environment, model.environmentSince, now)),
+        .Content((floorUI(now) :+ groundUI) ++ sortedUI ++ topUI)
+        .withCamera(Screen.centredCamera(shared.viewport)(viewTopLeft(now)(model.camera))),
+      Layers.weather -> Layer.Content(skyWeatherUI(model.environment, model.environmentSince, now)),
       Layers.ui      -> Layer.Content(heartBarUI(model.life, Update.maxLife, Point(3, 3))),
       Layers.screen  -> Layer.Content(teleportUI(model.teleportedAt, now))
     ).addCloneBlanks(tilesCloneBlanksUI)
-      .withAudio(musicUI(model, now)) |+| fadeInUI(model.enteredAt, now)
+      .withAudio(musicUI(model, now)) |+| fadeInUI(model.enteredAt, now) |+|
+      gradingUI(model.previousGrading, model.environment.grading, model.environmentSince, now)

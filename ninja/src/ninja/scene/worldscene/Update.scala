@@ -51,6 +51,7 @@ object Update:
       zone = None,
       environment = Environment.calm,
       environmentSince = now,
+      previousGrading = Grading.Initial,
       music = None,
       previousMusic = None,
       musicSince = now,
@@ -233,8 +234,9 @@ object Update:
 
   // --- Environment --------------------------------------------------------
 
-  /** Walking into another zone changes the weather, and the music if it's different: the old music
-    * fades out, then the new one plays (Godot's `music.gd`).
+  /** Walking into another zone changes the weather, the grading (fading from the old one, Godot's
+    * `color_correction.gd`), and the music if it's different: the old music fades out, then the new
+    * one plays (Godot's `music.gd`).
     */
   def enterZones(now: Seconds)(model: Model): Model =
     val body = playerBody(model.player.position)
@@ -243,6 +245,11 @@ object Update:
     if zone < 0 || model.zone.contains(zone) then model
     else
       val environment = Village.zones(zone).environment
-      val changed = model.copy(zone = Some(zone), environment = environment, environmentSince = now)
+      val changed = model.copy(
+        zone = Some(zone),
+        environment = environment,
+        environmentSince = now,
+        previousGrading = model.environment.grading
+      )
       if environment.music == model.music then changed
       else changed.copy(music = environment.music, previousMusic = model.music, musicSince = now)
