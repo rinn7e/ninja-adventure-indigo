@@ -4,14 +4,14 @@ Things that are easy to trip over when working on this project, and how a change
 
 ## Build gotchas
 
-- The template's gotchas apply (stale barrels: `./mill clean ninja`; `-Werror`), see its
+- The template's gotchas apply (stale barrels: `./mill clean game`; `-Werror`), see its
   [Commands](https://github.com/rinn7e/indigo-game-starter-template#commands). A stale barrel
   can also show up as "Not found" for something that exists.
-- **Nested asset lists.** mill-indigo's `listAssets` gives each subfolder of `ninja/assets/` its
+- **Nested asset lists.** mill-indigo's `listAssets` gives each subfolder of `game/assets/` its
   own nested object with its own asset set, so `GameAssets.assets` adds
   `Assets.assets.generated.assetSetRelativeTo(baseUrl)` explicitly. A missing asset shows up as a
   black screen and "Failed to find texture ref" in the console.
-- **The font sheet is committed.** `embedFont` writes `ninja/assets/generated/NormalFont.png`, but
+- **The font sheet is committed.** `embedFont` writes `game/assets/generated/NormalFont.png`, but
   on a clean clone the asset list is generated before it, so the PNG is tracked (and the folder
   keeps a `.gitkeep`, since `embedFont` needs it to exist). The font's own space is 1px wide;
   `GameAssets.fontInfo` widens it.
@@ -25,9 +25,9 @@ Things that are easy to trip over when working on this project, and how a change
 
 ```bash
 ./mill __.reformat
-./mill ninja.test
-./mill ninja.indigoBuild
-python3 -m http.server 8787 --directory out/ninja/indigoBuild.dest
+./mill game.test
+./mill game.indigoBuild
+python3 -m http.server 8787 --directory out/game/indigoBuild.dest
 ```
 
 Restart the server after each build: the build replaces the output folder.
@@ -36,16 +36,16 @@ Restart the server after each build: the build replaces the output folder.
 
 Two tools drive the real game in a browser, so a change can be checked by playing it:
 
-- `ninja/tools/route.py x0 y0 x1 y1` finds the shortest walkable route between two world points
+- `game/tools/route.py x0 y0 x1 y1` finds the shortest walkable route between two world points
   from the game's own collision data (it doesn't know about villagers or monsters) and prints it
   as key holds.
-- `ninja/tools/live.js` (needs `npm install playwright`) opens the game in a browser window and
+- `game/tools/live.js` (needs `npm install playwright`) opens the game in a browser window and
   takes commands over HTTP on port 9555: hold keys, drive a route, take a screenshot:
 
 ```bash
-node ninja/tools/live.js &
+node game/tools/live.js &
 curl "localhost:9555/press?k=Enter"
-curl -G "localhost:9555/route" --data-urlencode "r=$(python3 ninja/tools/route.py 64 48 273 -700)"
+curl -G "localhost:9555/route" --data-urlencode "r=$(python3 game/tools/route.py 64 48 273 -700)"
 curl "localhost:9555/shot?name=door"    # out/live-door.png
 ```
 

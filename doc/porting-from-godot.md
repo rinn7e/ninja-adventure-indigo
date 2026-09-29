@@ -2,7 +2,7 @@
 
 How each part of the Ninja Adventure Godot 4 demo
 ([pixel-boy/NinjaAdventure](https://github.com/pixel-boy/NinjaAdventure)) maps to this Indigo
-port. Godot paths are relative to the Godot project; Scala paths to `ninja/src/ninja/`.
+port. Godot paths are relative to the Godot project; Scala paths to `game/src/game/`.
 
 ## Mapping
 
@@ -31,7 +31,7 @@ comes from the Godot 3 version instead (below).
 ## The Godot 3 world, joined north
 
 The Godot 3 demo's world is imported whole and placed north of the Godot 4 village
-(`ninja/tools/godot3.py` reads Godot 3 scenes; `import_godot.py` writes
+(`game/tools/godot3.py` reads Godot 3 scenes; `import_godot.py` writes
 `common/constant/NorthVillageTiles.scala`; the rest is `common/constant/NorthVillage.scala`).
 
 | Godot 3 | Indigo port |

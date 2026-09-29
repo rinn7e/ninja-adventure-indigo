@@ -17,7 +17,7 @@ developers. This file only lists what this project adds.
   Godot keep Godot's values (speeds, durations, gradient stops, z-indexes) and live in
   `common/constant/` (`Village`, `Combat`, `Gradings`), each with the Godot file it comes from.
 - Data that can be read from the Godot project is imported, not typed in:
-  `ninja/tools/import_godot.py` generates `common/constant/VillageTiles.scala` (don't edit it by
+  `game/tools/import_godot.py` generates `common/constant/VillageTiles.scala` (don't edit it by
   hand) and copies the assets.
 - When Indigo's defaults differ from Godot's, match Godot. For example, collision is our own exact
   polygon move-and-slide (`common/util/Collision.scala`), not `indigo-physics`, which only has

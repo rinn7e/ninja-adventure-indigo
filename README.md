@@ -1,16 +1,38 @@
 # ninja-adventure-indigo
 
-A port of the [Ninja Adventure](https://pixel-boy.itch.io/ninja-adventure-asset-pack) Godot demo
-to [Indigo](https://indigoengine.io) `0.30.0-M6`, a purely functional game engine for Scala 3 /
-Scala.js. It is built on
-**[indigo-game-starter-template](https://github.com/rinn7e/indigo-game-starter-template)**: same
-build, same TEA-style structure, same conventions. Read the template's README first; this one only
-covers what's specific to this game.
+A clone of **[Ninja Adventure](https://pixel-boy.itch.io/ninja-adventure-asset-pack)**, the demo
+game Pixel-boy made in Godot for his free asset pack, rewritten in **Scala 3** with
+**[Indigo](https://indigoengine.io)** `0.30.0-M6`, a purely functional game engine that compiles
+to JavaScript (Scala.js) and runs in the browser or as a desktop app.
 
-It combines both versions of the demo into one world: the Godot 4 demo's village (map,
-characters, collision, camera, weather, colour grading, music, at the same 320x180 resolution),
-and north of it, through a path in the forest, the older Godot 3 demo's whole world (its village,
-house, dungeon, villagers and combat), matching each original as closely as possible.
+It is built on top of
+**[indigo-game-starter-template](https://github.com/rinn7e/indigo-game-starter-template)**: same
+build, same TEA-style structure (The Elm Architecture: `Model` / `Msg` / `update` / `ui` per
+scene), same conventions. Read the template's README first; this one only covers what's specific
+to this game.
+
+**The goal is to showcase how the Indigo engine works on a real game**, with the art and design
+of a known one: tile maps, collision, a moving camera, characters and monsters, combat,
+dialogue, weather, shaders, music and input, all written as pure functions of a model and the
+clock. Both versions of the Godot demo are merged into one world: the Godot 4 demo's village,
+and north of it, through a path in the forest, the older Godot 3 demo's whole world, each matched
+as closely as possible.
+
+## What it shows about Indigo
+
+| Topic | How | Where to look |
+| --- | --- | --- |
+| Program structure | One Indigo `Game`, routing between scenes TEA-style (no Indigo `Scene`s) | `game/src/game/Main.scala`, `Update.scala` |
+| Big tile maps, fast | ~8,000 tiles as instanced `CloneTiles` in static batches, y-sorted by row with the characters | `scene/worldscene/subui/TilemapUI.scala` |
+| Collision | Circle bodies sliding along exact tile polygons (Indigo's geometry types), with a spatial index | `common/util/Collision.scala`, `common/constant/WorldMap.scala` |
+| Game logic | Every frame a chain of pure `Model => Model` steps; sounds come out as events in the `Outcome` | `scene/worldscene/Update.scala` |
+| Effects without state | Particles, fades, camera slides and routines computed from the clock, not simulated | `scene/worldscene/subui/WeatherUI.scala`, `ActorsUI.scala` |
+| Custom shader | A blend shader on its own layer grading the whole screen | `ui/ColorGradingUI.scala` |
+| Audio | Music cross-fades with `SceneAudio`, sound effects with `PlaySound` | `scene/worldscene/UI.scala`, `Update.soundsOf` |
+| Input | Keyboard and gamepad, as Godot's `Input.get_vector` | `common/util/Input.scala` |
+| Any window size | Whole-number scaling and letterboxing, per layer | `common/util/Screen.scala`, `Main.mainUI` |
+| Assets from another engine | A pure-Python importer reading Godot 3 and Godot 4 scenes | `game/tools/import_godot.py`, `godot3.py` |
+| Tests | Pure functions, so logic is tested without the engine running | `game/test/src/game/` |
 
 ## Screenshots
 
@@ -73,26 +95,26 @@ Added for this port:
 
 Requirements and commands are the template's
 ([Requirements](https://github.com/rinn7e/indigo-game-starter-template#requirements),
-[Commands](https://github.com/rinn7e/indigo-game-starter-template#commands)), with the module
-named `ninja` instead of `game`:
+[Commands](https://github.com/rinn7e/indigo-game-starter-template#commands)); the code is the
+`game` module in `game/src/game/`, as in the template:
 
 ```bash
-./mill ninja.test          # unit tests
-./mill ninja.indigoBuild   # build the site into out/ninja/indigoBuild.dest
-./mill ninja.indigoRun     # desktop app (Electron)
-python3 -m http.server 8787 --directory out/ninja/indigoBuild.dest
+./mill game.test          # unit tests
+./mill game.indigoBuild   # build the site into out/game/indigoBuild.dest
+./mill game.indigoRun     # desktop app (Electron)
+python3 -m http.server 8787 --directory out/game/indigoBuild.dest
 ```
 
 ## Re-importing from the Godot projects
 
 Everything the game needs is in the repository: the images, sounds and music in
-`ninja/assets/`, and the map in `ninja/src/ninja/common/constant/VillageTiles.scala`, both
-written by `ninja/tools/import_godot.py` (pure Python). To re-run it, put the Godot 4 demo
+`game/assets/`, and the map in `game/src/game/common/constant/VillageTiles.scala`, both
+written by `game/tools/import_godot.py` (pure Python). To re-run it, put the Godot 4 demo
 (<https://github.com/pixel-boy/NinjaAdventure>) in `assets/NinjaAdventure Godot V4/` and the
 Godot 3 version in `assets/NinjaAdventure Godot V3/`, then:
 
 ```bash
-python3 ninja/tools/import_godot.py
+python3 game/tools/import_godot.py
 ```
 
 Neither Godot project is included here (see [Credits](#credits)).
@@ -105,9 +127,9 @@ Neither Godot project is included here (see [Credits](#credits)).
   conventions.
 - **[doc/development.md](doc/development.md)**: build gotchas, and how to check a change.
 
-**Where to start in the code:** `ninja/src/ninja/scene/worldscene/Update.scala` is the game
-logic; the rest follows the template's layout (`common/constant/Village.scala` and `Combat.scala`
-hold the numbers taken from Godot).
+**Where to start in the code:** `game/src/game/scene/worldscene/Update.scala` is the game
+logic; the rest follows the template's layout (`common/constant/Village.scala`,
+`NorthVillage.scala` and `Combat.scala` hold the numbers taken from Godot).
 
 ## Credits
 
@@ -118,14 +140,14 @@ hold the numbers taken from Godot).
 - Game design, map and behaviour: the Ninja Adventure Godot 4 demo by Pixel-boy,
   <https://github.com/pixel-boy/NinjaAdventure>. This project is an independent re-implementation
   in Scala; the demo's scripts and scenes are not redistributed.
-- Nine images in `ninja/assets/` come from that demo rather than the pack: `crate`, `pot`, `grass`,
+- Nine images in `game/assets/` come from that demo rather than the pack: `crate`, `pot`, `grass`,
   `pig`, `shadow`, `fx_cloud`, `fx_fog`, `fx_rain` and `tileset_animated`. They are the same
   author's versions of the pack's art, made for the demo; the demo repository states no licence.
 - The Godot 3 version of the demo, MIT licence, © 2020 Emilio Coppola: its map, villagers,
   combat and effects are ported here, and the files it adds to the pack's art (`v3_tileset_*`,
   `monster_bamboo`, `weapon_lance`, `fx_impact`, `fx_spark`, `fx_smoke`, `life_bar_mini_*`,
   `tutorial`, `dialog_*`, `npc_*`, `face_*`, `plant`, `snd_hit`, `snd_grass`) are copied into
-  `ninja/assets/`.
+  `game/assets/`.
 
 ## Changelog
 
@@ -134,5 +156,5 @@ See [CHANGELOG.md](CHANGELOG.md).
 ## License
 
 The code is [MIT](LICENSE). The assets keep their own terms: the asset pack in `assets/` and the
-files copied from it into `ninja/assets/` are CC0; see [Credits](#credits) for the files taken
+files copied from it into `game/assets/` are CC0; see [Credits](#credits) for the files taken
 from the Godot demos.

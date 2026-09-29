@@ -7,7 +7,7 @@ Thumbs.db
 *.zip
 
 # The Godot reference project (https://github.com/pixel-boy/NinjaAdventure) has no licence, so it
-# isn't redistributed here: download it into this folder to run ninja/tools/import_godot.py.
+# isn't redistributed here: download it into this folder to run game/tools/import_godot.py.
 /assets/NinjaAdventure Godot V4/
 # The older Godot 3 version of the demo, kept locally as a second reference.
 /assets/NinjaAdventure Godot V3/
