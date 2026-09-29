@@ -4,6 +4,7 @@ import indigo.*
 import indigoextras.subsystems.FPSCounter
 import ninja.common.asset.GameAssets
 import ninja.common.constant.{Layers, Layout}
+import ninja.common.util.Screen
 import ninja.Subscription.subscriptions
 import ninja.Type.*
 import ninja.common.Types.{SceneRoute, Shared}
@@ -68,7 +69,7 @@ object Main extends BasicGameRuntime[Unit]:
             FPSCounter
               .tint(Layers.fps, NormalFont.fontKey, Assets.assets.generated.NormalFont)
               // Bottom-left, clear of the hearts HUD in the top-left corner.
-              .moveTo(Point(3, Layout.screen.height - 13))
+              .moveTo(Point(3, Layout.screen.height - 16))
           )
       )
 
@@ -96,19 +97,44 @@ object Main extends BasicGameRuntime[Unit]:
   // -----------------------------------------------------------------
 
   /** The root UI (named `mainUI`, since `ninja.ui` is the reusable-UI package): the showing scene's
-    * UI, drawn into layers whose order is fixed here for every scene, with the FPS counter on top.
+    * UI, drawn into layers whose order is fixed here for every scene, with the FPS counter and the
+    * letterbox bars on top.
     */
   def mainUI(shared: Shared, model: Model): SceneUpdateFragment =
-    layersUI |+| sceneUI(shared, model)
+    layersUI(shared.viewport) |+| sceneUI(shared, model) |+| barsUI(shared.viewport)
 
-  private val layersUI: SceneUpdateFragment =
+  /** Every layer is scaled by the whole-number `Screen.scaleFor`, and the screen-space layers are
+    * moved so the 320x180 view is centred in the window. The world layer's camera is left to each
+    * scene (`Screen.centredCamera`), since merged layers keep the first camera they're given.
+    */
+  private def layersUI(viewport: Size): SceneUpdateFragment =
+    val centred = Screen.centredCamera(viewport)(Point.zero)
     SceneUpdateFragment(
       Layers.world   -> Layer.Content.empty,
-      Layers.weather -> Layer.Content.empty,
-      Layers.ui      -> Layer.Content.empty,
-      Layers.screen  -> Layer.Content.empty,
-      Layers.fps     -> Layer.Content.empty
-    ).withMagnification(Magnification(Layout.magnification))
+      Layers.weather -> Layer.Content.empty.withCamera(centred),
+      Layers.ui      -> Layer.Content.empty.withCamera(centred),
+      Layers.screen  -> Layer.Content.empty.withCamera(centred),
+      Layers.fps     -> Layer.Content.empty.withCamera(centred),
+      Layers.bars    -> Layer.Content.empty
+    ).withMagnification(Magnification(Screen.scaleFor(viewport)))
+
+  /** Black bars over whatever is drawn outside the view (world beyond the screen, weather tiles),
+    * in window coordinates (game pixels at the current scale).
+    */
+  private def barsUI(viewport: Size): SceneUpdateFragment =
+    val window = Screen.windowFor(viewport) + Size(1)
+    val view   = Rectangle(Screen.offsetFor(viewport), Layout.screen)
+    val black  = Fill.Color(RGBA.Black)
+    SceneUpdateFragment(
+      Layers.bars -> Layer.Content(
+        Batch(
+          Rectangle(0, 0, window.width, view.y),
+          Rectangle(0, view.bottom, window.width, window.height - view.bottom),
+          Rectangle(0, view.y, view.x, view.height),
+          Rectangle(view.right, view.y, window.width - view.right, view.height)
+        ).filter(r => r.width > 0 && r.height > 0).map(r => Quad(r, black))
+      )
+    )
 
   private def sceneUI(shared: Shared, model: Model): SceneUpdateFragment =
     model.route match

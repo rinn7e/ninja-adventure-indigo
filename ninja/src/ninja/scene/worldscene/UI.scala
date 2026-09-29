@@ -4,6 +4,7 @@ import indigo.*
 import ninja.common.Types.*
 import ninja.common.asset.GameAssets
 import ninja.common.constant.{Layers, Layout}
+import ninja.common.util.Screen
 import ninja.scene.worldscene.Type.*
 import ninja.scene.worldscene.common.Util.viewTopLeft
 import ninja.scene.worldscene.subui.ActorsUI.actorsUI
@@ -53,7 +54,9 @@ object UI:
     SceneUpdateFragment(
       Layers.world -> Layer
         .Content(floorUI(now) ++ sortedUI ++ topUI)
-        .withCamera(Camera.Fixed(viewTopLeft(now)(model.camera))),
+        .withCamera(
+          Camera.Fixed(viewTopLeft(now)(model.camera) - Screen.offsetFor(shared.viewport))
+        ),
       Layers.weather -> Layer.Content(weatherUI(model.environment, model.environmentSince, now)),
       Layers.ui      -> Layer.Content(heartBarUI(model.life, Update.maxLife, Point(3, 3))),
       Layers.screen  -> Layer.Content(teleportUI(model.teleportedAt, now))

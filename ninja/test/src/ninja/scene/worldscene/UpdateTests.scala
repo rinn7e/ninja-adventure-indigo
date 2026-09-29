@@ -10,7 +10,7 @@ import ninja.scene.worldscene.common.Util.*
 class UpdateTests extends munit.FunSuite {
 
   val start: Seconds = Seconds(10)
-  val shared: Shared = Shared(start, Seconds(1.0 / 60), Dice.loaded(1))
+  val shared: Shared = Shared(start, Seconds(1.0 / 60), Dice.loaded(1), Size(1280, 720))
   val world: Model   = init(shared).unsafeGet
 
   def tick(move: Vector2, at: Seconds)(model: Model): Model =

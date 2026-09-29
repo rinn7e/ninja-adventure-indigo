@@ -9,7 +9,7 @@ import ninja.scene.{TitleScene, WorldScene}
 
 class UpdateTests extends munit.FunSuite {
 
-  val shared: Shared = Shared(Seconds(1), Seconds(1.0 / 60), Dice.loaded(1))
+  val shared: Shared = Shared(Seconds(1), Seconds(1.0 / 60), Dice.loaded(1), Size(1280, 720))
   val start: Model   = init(shared).unsafeGet
 
   test("the game starts on the title") {

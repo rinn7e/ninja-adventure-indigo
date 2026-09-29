@@ -4,6 +4,7 @@ import indigo.*
 import ninja.common.Types.*
 import ninja.common.asset.GameAssets
 import ninja.common.constant.{Layers, Layout}
+import ninja.common.util.Screen
 import ninja.generated.Assets
 import ninja.scene.titlescene.Type.*
 import ninja.theme.Palette
@@ -23,9 +24,11 @@ object UI:
         .moveTo(Layout.screen.width / 2, 40)
 
     SceneUpdateFragment(
-      Layers.world -> Layer.Content(
-        Batch(Quad(Rectangle(Layout.screen), Fill.Color(Palette.ink)), titleUI) ++
-          characterUI(Assets.assets.ninjaBlue, Facing.Down, walk, Vector2(160, 104))
-      ),
+      Layers.world -> Layer
+        .Content(
+          Batch(Quad(Rectangle(Layout.screen), Fill.Color(Palette.ink)), titleUI) ++
+            characterUI(Assets.assets.ninjaBlue, Facing.Down, walk, Vector2(160, 104))
+        )
+        .withCamera(Screen.centredCamera(shared.viewport)(Point.zero)),
       Layers.ui -> Layer.Content(blinkingLabelUI("Press Start", 134, Palette.gold, now))
     ) |+| fadeInUI(model.enteredAt, now)
